@@ -25,9 +25,14 @@ export function Navbar() {
       <div className="container-page flex items-center justify-between h-16">
         <Link href={isAuthenticated ? "/dashboard" : "/"} className="flex items-center gap-2 focus-ring rounded">
           <span className="h-8 w-8 rounded-lg bg-teal-500 flex items-center justify-center text-white font-bold text-sm">JC</span>
-          <span className="text-white font-semibold text-lg tracking-tight">
-            JusticeChamp<span className="text-teal-400">™</span>
-          </span>
+                    <span className="flex flex-col leading-tight">
+                                <span className="text-white font-semibold text-lg tracking-tight">
+                                              JusticeChamp<span className="text-teal-400">™</span>
+                                </span>
+                                <span className="text-teal-400 text-[10px] font-medium tracking-wide">
+                                              Your Personal Legal Resource
+                                </span>
+                    </span>
         </Link>
 
         {isAuthenticated && (
