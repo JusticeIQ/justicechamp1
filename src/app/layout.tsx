@@ -3,9 +3,9 @@ import "./globals.css";
 import { AppStateProvider } from "@/lib/store";
 
 export const metadata: Metadata = {
-  title: "JusticeChamp™ — Document what happened. Understand your options.",
+  title: "JusticeChamp™ — Your Personal Legal Resource",
   description:
-    "JusticeChamp helps you document incidents, organize evidence, understand claim readiness, and connect with lawyers. Part of the JusticeIQ legal intelligence ecosystem.",
+    "A free, private place to get legal information, organize important records, and connect with the right legal help when you need it — so you're never overwhelmed when legal issues arise. Part of the JusticeIQ legal intelligence ecosystem.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
