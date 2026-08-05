@@ -6,6 +6,7 @@ export function Footer() {
       <div className="container-page py-10 grid grid-cols-2 md:grid-cols-4 gap-8 text-sm">
         <div className="col-span-2 md:col-span-1">
           <p className="text-white font-semibold">JusticeChamp™</p>
+                    <p className="text-teal-400 text-xs font-medium mt-1">Your Personal Legal Resource</p>
           <p className="mt-2 text-white/50 text-xs">Part of the JusticeIQ™ legal intelligence ecosystem.</p>
         </div>
         <div>
