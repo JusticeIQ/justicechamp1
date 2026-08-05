@@ -29,14 +29,17 @@ export default function LandingPage() {
               <div className="flex items-center gap-2 mb-5">
                 <Badge tone="teal">Powered by JusticeIQ™</Badge>
               </div>
-              <h1 className="text-4xl md:text-5xl font-bold leading-tight">JusticeChamp™</h1>
-              <p className="mt-4 text-lg text-white/80 max-w-lg">
-                Document what happened. Understand your options. Take the next step.
-              </p>
-              <p className="mt-4 text-white/60 max-w-lg text-sm">
-                A consumer-facing tool for personal injury and employment law matters — helping you organize evidence, see a
-                transparent claim-readiness score, and connect with vetted lawyers when you're ready.
-              </p>
+          <h1 className="text-4xl md:text-5xl font-bold leading-tight">
+                      Life is unpredictable.<br />Being prepared doesn't have to be.
+          </h1>
+                      <p className="mt-4 text-lg text-white/80 max-w-lg">
+                                  A free, private place to get legal information, organize important records, and connect with the right legal
+                                  help when you need it — so you're never overwhelmed when legal issues arise.
+                      </p>
+                      <p className="mt-4 text-white/60 max-w-lg text-sm">
+                                  Know what to do before you need to know. JusticeChamp helps you organize evidence, see a transparent
+                                  claim-readiness score, and connect with vetted lawyers when you're ready.
+                      </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link href="/signup" className="inline-flex items-center justify-center rounded-lg font-medium px-6 py-3 bg-teal-500 hover:bg-teal-600 text-white shadow-md shadow-teal-500/30">
                   Create a free account
@@ -72,7 +75,8 @@ export default function LandingPage() {
         </section>
 
         <section className="container-page py-16">
-          <h2 className="text-2xl font-bold text-navy-900 text-center">A guided path from incident to informed next step</h2>
+                  <p className="text-teal-600 text-sm font-semibold uppercase tracking-wide text-center mb-2">Know what to do before you need to know</p>
+        <h2 className="text-2xl font-bold text-navy-900 text-center">A guided path from incident to informed next step</h2>
           <div className="grid md:grid-cols-3 gap-6 mt-10">
             {STEPS.map((s) => (
               <Card key={s.n}>
@@ -122,7 +126,8 @@ export default function LandingPage() {
 
         <section className="container-page pb-20">
           <Card className="bg-navy-900 text-white text-center py-12">
-            <h2 className="text-2xl font-bold">See it end-to-end in under 5 minutes</h2>
+                    <p className="text-teal-400 text-xs font-semibold uppercase tracking-wide mb-2">When life changes unexpectedly, JusticeChamp helps you stay organized and connected</p>
+          <h2 className="text-2xl font-bold">See it end-to-end in under 5 minutes</h2>
             <p className="mt-2 text-white/70 max-w-xl mx-auto text-sm">
               Use the one-click demo account to explore a preloaded personal injury claim and employment claim, complete with
               sample documents, timelines, claim scores, and lawyer matches.
