@@ -31,7 +31,7 @@ const RECOMMENDED: Record<string, string[]> = {
 };
 
 export default function DocumentsPage() {
-  const { claims, addDocument, toggleDocumentImportant, deleteDocument } = useAppState();
+  const { claims, addDocument, toggleDocumentImportant, deleteDocument, sendDocumentToLawyer } = useAppState();
   const [selectedClaimId, setSelectedClaimId] = useState<string | null>(claims[0]?.id ?? null);
   const [category, setCategory] = useState<DocumentCategory>("photo");
   const [description, setDescription] = useState("");
@@ -57,6 +57,13 @@ export default function DocumentsPage() {
     setTimeout(() => setNotice(null), 4000);
   }
 
+  function handleSendToLawyer(docId: string, name: string) {
+    if (!claim) return;
+    sendDocumentToLawyer(claim.id, docId);
+    setNotice(`Sent "${name}" to your lawyer's JusticeIQ dashboard (simulated for this demo — the two apps don't share a live connection yet).`);
+    setTimeout(() => setNotice(null), 5000);
+  }
+
   return (
     <AppShell>
       <div className="container-page py-8 space-y-6">
@@ -74,6 +81,8 @@ export default function DocumentsPage() {
                 </button>
               ))}
             </div>
+
+            {notice && <div className="rounded-lg bg-teal-50 border border-teal-200 text-teal-800 text-sm p-3">{notice}</div>}
 
             <div className="grid lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2 space-y-4">
@@ -106,7 +115,6 @@ export default function DocumentsPage() {
                       </div>
                     </div>
                     <Button type="submit" disabled={!fileName} size="sm">Upload to this claim</Button>
-                    {notice && <p className="text-xs text-teal-700">{notice}</p>}
                   </form>
                 </Card>
 
@@ -119,15 +127,21 @@ export default function DocumentsPage() {
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-navy-900 truncate">{d.name}</p>
                           <p className="text-xs text-navy-700">{d.description} · {d.sizeLabel} · {new Date(d.uploadedAt).toLocaleDateString()}</p>
-                          <div className="flex gap-2 mt-1">
+                          <div className="flex gap-2 mt-1 flex-wrap">
                             <Badge tone="gray">{d.category.replace(/_/g, " ")}</Badge>
                             <Badge tone={d.status === "uploaded" ? "teal" : "amber"}>{d.status.replace(/_/g, " ")}</Badge>
                             {d.important && <Badge tone="amber">Important</Badge>}
+                            {d.sentToLawyer && <Badge tone="navy">Sent to lawyer</Badge>}
                           </div>
                         </div>
-                        <div className="flex gap-2 shrink-0">
-                          <Button size="sm" variant="outline" onClick={() => toggleDocumentImportant(claim.id, d.id)}>{d.important ? "Unmark" : "Mark important"}</Button>
-                          <Button size="sm" variant="ghost" onClick={() => deleteDocument(claim.id, d.id)}>Remove</Button>
+                        <div className="flex flex-col gap-2 shrink-0 items-end">
+                          <div className="flex gap-2">
+                            <Button size="sm" variant="outline" onClick={() => toggleDocumentImportant(claim.id, d.id)}>{d.important ? "Unmark" : "Mark important"}</Button>
+                            <Button size="sm" variant="ghost" onClick={() => deleteDocument(claim.id, d.id)}>Remove</Button>
+                          </div>
+                          <Button size="sm" variant={d.sentToLawyer ? "outline" : "secondary"} disabled={d.sentToLawyer} onClick={() => handleSendToLawyer(d.id, d.name)}>
+                            {d.sentToLawyer ? "Sent to your lawyer ✓" : "Send to your lawyer"}
+                          </Button>
                         </div>
                       </li>
                     ))}
@@ -146,6 +160,13 @@ export default function DocumentsPage() {
                       </li>
                     ))}
                   </ul>
+                </Card>
+                <Card>
+                  <h2 className="font-semibold text-navy-900 text-sm">Sending documents to your lawyer</h2>
+                  <p className="text-xs text-navy-700 mt-1">
+                    Once you request a consultation, your lawyer gets access to your JusticeIQ dashboard for this matter.
+                    Use "Send to your lawyer" on any document — including photos and videos — to flag it for their review.
+                  </p>
                 </Card>
                 <Card>
                   <h2 className="font-semibold text-navy-900 text-sm">Sample files (demo mode)</h2>
