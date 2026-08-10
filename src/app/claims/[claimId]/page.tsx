@@ -14,9 +14,10 @@ const CATEGORY_LABEL: Record<string, string> = { personal_injury: "Personal Inju
 export default function ClaimDetailPage() {
   const params = useParams<{ claimId: string }>();
   const router = useRouter();
-  const { getClaim } = useAppState();
+  const { getClaim, markLawyerMessageRead } = useAppState();
   const claim = getClaim(params.claimId);
   const [downloaded, setDownloaded] = useState(false);
+  const [openMessageId, setOpenMessageId] = useState<string | null>(null);
 
   if (!claim) {
     return (
@@ -30,6 +31,12 @@ export default function ClaimDetailPage() {
 
   const answeredEntries = Object.values(claim.answers).filter((a) => a.status === "answered" && a.value);
   const resumeHref = `/report-incident/${claim.category === "personal_injury" ? "personal-injury" : "employment"}?claim=${claim.id}`;
+  const unreadMessages = claim.lawyerMessages.filter((m) => !m.read).length;
+
+  function handleOpenMessage(id: string) {
+    setOpenMessageId(openMessageId === id ? null : id);
+    markLawyerMessageRead(claim!.id, id);
+  }
 
   return (
     <AppShell>
@@ -61,6 +68,45 @@ export default function ClaimDetailPage() {
 
         <div className="grid lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
+            <Card className={unreadMessages > 0 ? "border-teal-300" : undefined}>
+              <div className="flex items-center justify-between">
+                <h2 className="font-semibold text-navy-900">Messages from your lawyer</h2>
+                {unreadMessages > 0 && <Badge tone="teal">{unreadMessages} new</Badge>}
+              </div>
+              <p className="text-xs text-navy-700 mt-1">
+                Confidential updates your lawyer posts to this claim appear here. This demo simulates delivery from the
+                firm's JusticeIQ dashboard — the two apps don't share a live connection yet.
+              </p>
+              {claim.lawyerMessages.length === 0 ? (
+                <p className="text-sm text-navy-700 mt-3">No messages yet. Once you're matched with a lawyer, updates they post will show up here.</p>
+              ) : (
+                <ul className="mt-3 divide-y divide-navy-900/5">
+                  {claim.lawyerMessages
+                    .slice()
+                    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+                    .map((m) => (
+                      <li key={m.id} className="py-3">
+                        <button className="w-full text-left" onClick={() => handleOpenMessage(m.id)}>
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="text-sm font-medium text-navy-900">{m.subject}</p>
+                            {!m.read && <span className="h-2 w-2 rounded-full bg-teal-500 shrink-0" aria-label="unread" />}
+                          </div>
+                          <p className="text-xs text-navy-700/70 mt-0.5">
+                            {m.fromLawyerName}, {m.fromFirmName} · {new Date(m.createdAt).toLocaleString()}
+                          </p>
+                        </button>
+                        {openMessageId === m.id && (
+                          <div className="mt-2 text-sm text-navy-700 bg-navy-900/5 rounded-lg p-3">
+                            {m.relatedUpdate && <Badge tone="amber">File update</Badge>}
+                            <p className={m.relatedUpdate ? "mt-2" : ""}>{m.body}</p>
+                          </div>
+                        )}
+                      </li>
+                    ))}
+                </ul>
+              )}
+            </Card>
+
             <Card>
               <h2 className="font-semibold text-navy-900">Incident overview</h2>
               <dl className="grid sm:grid-cols-2 gap-4 mt-3 text-sm">
@@ -126,9 +172,12 @@ export default function ClaimDetailPage() {
               <ul className="mt-3 space-y-2">
                 {claim.documents.length === 0 && <p className="text-sm text-navy-700">No documents uploaded yet.</p>}
                 {claim.documents.map((d) => (
-                  <li key={d.id} className="text-sm flex justify-between items-center">
+                  <li key={d.id} className="text-sm flex justify-between items-center gap-2">
                     <span className="text-navy-900">{d.name}</span>
-                    <Badge tone="gray">{d.category.replace(/_/g, " ")}</Badge>
+                    <span className="flex gap-1.5 shrink-0">
+                      <Badge tone="gray">{d.category.replace(/_/g, " ")}</Badge>
+                      {d.sentToLawyer && <Badge tone="navy">Sent to lawyer</Badge>}
+                    </span>
                   </li>
                 ))}
               </ul>
