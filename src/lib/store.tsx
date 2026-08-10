@@ -40,6 +40,7 @@ function seededState(): AppState {
       { id: "n1", message: "New match available for your employment claim.", createdAt: "2026-06-09T10:00:00Z", read: false, type: "match" },
       { id: "n2", message: "Reminder: California personal injury filing deadline is approaching.", createdAt: "2026-06-11T08:00:00Z", read: false, type: "deadline" },
       { id: "n3", message: "Your motor vehicle claim summary is ready to review.", createdAt: "2026-06-10T15:30:00Z", read: true, type: "task" },
+      { id: "n4", message: "New secure message from Devon Whitmore about your employment claim.", createdAt: "2026-06-12T09:15:00Z", read: false, type: "message" },
     ],
     activityLog: [
       { id: "a1", message: "Submitted personal injury incident report", timestamp: "2026-05-15T10:00:00Z" },
@@ -67,10 +68,12 @@ interface AppContextValue extends AppState {
   addDocument: (claimId: string, doc: Omit<ClaimDocument, "id" | "claimId" | "uploadedAt" | "status">) => void;
   toggleDocumentImportant: (claimId: string, docId: string) => void;
   deleteDocument: (claimId: string, docId: string) => void;
+  sendDocumentToLawyer: (claimId: string, docId: string) => void;
   recomputeScore: (claimId: string) => void;
   requestConsultation: (claimId: string, lawyerId: string, lawyerName: string) => void;
   logActivity: (message: string) => void;
   markNotificationRead: (id: string) => void;
+  markLawyerMessageRead: (claimId: string, messageId: string) => void;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -165,6 +168,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         goals: "",
         jurisdiction: "",
         incidentDate: "",
+        lawyerMessages: [],
       };
       setState((prev) => ({ ...prev, claims: [newClaim, ...prev.claims] }));
       logActivity(`Started a new ${category === "personal_injury" ? "personal injury" : "employment"} incident report`);
@@ -278,6 +282,26 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     }));
   }, []);
 
+  const sendDocumentToLawyer = useCallback(
+    (claimId: string, docId: string) => {
+      let docName = "";
+      setState((prev) => ({
+        ...prev,
+        claims: prev.claims.map((c) => {
+          if (c.id !== claimId) return c;
+          const documents = c.documents.map((d) => {
+            if (d.id !== docId) return d;
+            docName = d.name;
+            return { ...d, sentToLawyer: true, sentToLawyerAt: new Date().toISOString() };
+          });
+          return { ...c, documents, updatedAt: new Date().toISOString() };
+        }),
+      }));
+      logActivity(`Sent document to your lawyer's JusticeIQ dashboard: ${docName || docId}`);
+    },
+    [logActivity]
+  );
+
   const recomputeScore = useCallback((claimId: string) => {
     setState((prev) => ({
       ...prev,
@@ -304,6 +328,15 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     setState((prev) => ({ ...prev, notifications: prev.notifications.map((n) => (n.id === id ? { ...n, read: true } : n)) }));
   }, []);
 
+  const markLawyerMessageRead = useCallback((claimId: string, messageId: string) => {
+    setState((prev) => ({
+      ...prev,
+      claims: prev.claims.map((c) =>
+        c.id !== claimId ? c : { ...c, lawyerMessages: c.lawyerMessages.map((m) => (m.id === messageId ? { ...m, read: true } : m)) }
+      ),
+    }));
+  }, []);
+
   const value = useMemo<AppContextValue>(
     () => ({
       ...state,
@@ -323,10 +356,12 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       addDocument,
       toggleDocumentImportant,
       deleteDocument,
+      sendDocumentToLawyer,
       recomputeScore,
       requestConsultation,
       logActivity,
       markNotificationRead,
+      markLawyerMessageRead,
     }),
     [
       state,
@@ -346,10 +381,12 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       addDocument,
       toggleDocumentImportant,
       deleteDocument,
+      sendDocumentToLawyer,
       recomputeScore,
       requestConsultation,
       logActivity,
       markNotificationRead,
+      markLawyerMessageRead,
     ]
   );
 

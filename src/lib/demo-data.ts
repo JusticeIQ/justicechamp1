@@ -1,4 +1,4 @@
-import { Claim, ClaimDocument, DemoUser, FaqItem, IntakeAnswer, LawyerMatch, Resource, TimelineEvent } from "./types";
+import { Claim, ClaimDocument, DemoUser, FaqItem, IntakeAnswer, LawyerMatch, LawyerMessage, Resource, TimelineEvent } from "./types";
 import { computeClaimScore } from "./scoring";
 
 // All names, firms, and figures below are FICTIONAL DEMONSTRATION DATA
@@ -61,6 +61,19 @@ const piDocuments: ClaimDocument[] = [
   { id: "pi-d5", claimId: "claim-pi-1", name: "witness_statement_panand.pdf", category: "witness_statement", description: "Written statement from witness Priya Anand.", important: false, uploadedAt: "2026-05-22T11:05:00Z", status: "uploaded", sizeLabel: "94 KB" },
 ];
 
+const piLawyerMessages: LawyerMessage[] = [
+  {
+    id: "pi-lm-1",
+    claimId: "claim-pi-1",
+    fromLawyerName: "Michael Alden",
+    fromFirmName: "Alden & Cross Injury Law",
+    subject: "Reviewed your ER records",
+    body: "I've reviewed the ER discharge summary you uploaded. It supports the timeline you described. I've added a note to your file — let me know if you have follow-up physiotherapy records to add.",
+    createdAt: "2026-06-05T13:20:00Z",
+    read: true,
+  },
+];
+
 export function buildDemoClaim1(): Claim {
   const answers = Object.fromEntries(piAnswersList);
   const claim: Claim = {
@@ -83,6 +96,7 @@ export function buildDemoClaim1(): Claim {
     incidentDate: "2026-05-14",
     deadlineDate: "2028-05-14",
     deadlineLabel: "California personal injury statute of limitations (approx.)",
+    lawyerMessages: piLawyerMessages,
   };
   claim.score = computeClaimScore(claim);
   return claim;
@@ -122,11 +136,35 @@ const empTimeline: TimelineEvent[] = [
 ];
 
 const empDocuments: ClaimDocument[] = [
-  { id: "emp-d1", claimId: "claim-emp-1", name: "offer_letter_2022.pdf", category: "employment_contract", description: "Original offer letter and terms of employment.", important: false, uploadedAt: "2026-04-05T10:00:00Z", status: "uploaded", sizeLabel: "220 KB" },
-  { id: "emp-d2", claimId: "claim-emp-1", name: "performance_improvement_plan.pdf", category: "other", description: "PIP document dated March 18.", important: true, uploadedAt: "2026-04-05T10:05:00Z", status: "uploaded", sizeLabel: "301 KB" },
-  { id: "emp-d3", claimId: "claim-emp-1", name: "termination_letter.pdf", category: "termination_letter", description: "Termination letter dated April 2.", important: true, uploadedAt: "2026-04-05T10:07:00Z", status: "uploaded", sizeLabel: "180 KB" },
+  { id: "emp-d1", claimId: "claim-emp-1", name: "offer_letter_2022.pdf", category: "employment_contract", description: "Original offer letter and terms of employment.", important: false, uploadedAt: "2026-04-05T10:00:00Z", status: "uploaded", sizeLabel: "220 KB", sentToLawyer: true, sentToLawyerAt: "2026-04-06T09:00:00Z" },
+  { id: "emp-d2", claimId: "claim-emp-1", name: "performance_improvement_plan.pdf", category: "other", description: "PIP document dated March 18.", important: true, uploadedAt: "2026-04-05T10:05:00Z", status: "uploaded", sizeLabel: "301 KB", sentToLawyer: true, sentToLawyerAt: "2026-04-06T09:00:00Z" },
+  { id: "emp-d3", claimId: "claim-emp-1", name: "termination_letter.pdf", category: "termination_letter", description: "Termination letter dated April 2.", important: true, uploadedAt: "2026-04-05T10:07:00Z", status: "uploaded", sizeLabel: "180 KB", sentToLawyer: true, sentToLawyerAt: "2026-04-06T09:00:00Z" },
   { id: "emp-d4", claimId: "claim-emp-1", name: "hr_complaint_email.pdf", category: "email", description: "Email thread containing the formal HR complaint.", important: true, uploadedAt: "2026-04-06T09:00:00Z", status: "uploaded", sizeLabel: "96 KB" },
   { id: "emp-d5", claimId: "claim-emp-1", name: "pay_stubs_q1_2026.pdf", category: "pay_record", description: "Pay stubs for Q1 2026 showing salary and bonus structure.", important: false, uploadedAt: "2026-04-06T09:10:00Z", status: "uploaded", sizeLabel: "540 KB" },
+];
+
+const empLawyerMessages: LawyerMessage[] = [
+  {
+    id: "emp-lm-1",
+    claimId: "claim-emp-1",
+    fromLawyerName: "Devon Whitmore",
+    fromFirmName: "Whitmore Employment Law Group",
+    subject: "Reviewed your termination timeline",
+    body: "I've gone through the chronology and PIP documentation you shared. The two-week gap between your HR complaint and the PIP is significant — I've flagged it in your file as a key fact for a potential retaliation claim. This is a preliminary read, not legal advice yet; we'll go deeper once we speak.",
+    createdAt: "2026-06-12T09:15:00Z",
+    read: false,
+  },
+  {
+    id: "emp-lm-2",
+    claimId: "claim-emp-1",
+    fromLawyerName: "Devon Whitmore",
+    fromFirmName: "Whitmore Employment Law Group",
+    subject: "File updated: performance_improvement_plan.pdf",
+    body: "I added a note to the PIP document in your file clarifying the 30-day period was cut short by 12 days. No action needed from you — just keeping you in the loop.",
+    createdAt: "2026-06-13T14:40:00Z",
+    read: false,
+    relatedUpdate: true,
+  },
 ];
 
 export function buildDemoClaim2(): Claim {
@@ -151,6 +189,7 @@ export function buildDemoClaim2(): Claim {
     incidentDate: "2026-04-02",
     deadlineDate: "2027-04-02",
     deadlineLabel: "Approximate deadline to file an administrative complaint",
+    lawyerMessages: empLawyerMessages,
   };
   claim.score = computeClaimScore(claim);
   return claim;
