@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { addNotice, cancelImportantDate, createImportantDate, listImportantDates, updateImportantDate } from "@/lib/bridge-store";
-import { Notice } from "@/lib/types";
+import { listImportantDates, withBridgeData } from "@/lib/bridge-store";
+import { ImportantDate, Notice } from "@/lib/types";
 
 const WEBHOOK_SECRET = process.env.JUSTICECHAMP_WEBHOOK_SECRET || "demo-shared-secret-justiceiq-justicechamp";
 
@@ -10,6 +10,10 @@ function fmtDate(d: string) {
   } catch {
     return d;
   }
+}
+
+function newNoticeId() {
+  return `notice-${Date.now()}-${Math.round(Math.random() * 1000)}`;
 }
 
 export async function POST(req: NextRequest) {
@@ -32,84 +36,116 @@ export async function POST(req: NextRequest) {
   if (!body.id || !body.caseId || !body.action) {
     return NextResponse.json({ ok: false, error: "id, caseId, and action are required" }, { status: 400 });
   }
+  const { id, caseId, action } = body;
 
-  const existing = (await listImportantDates()).find((d) => d.id === body.id);
+  // Each branch below reads and writes the bridge store exactly once (via
+  // withBridgeData), so the important-date change and the notice that
+  // describes it are saved together atomically. Doing this as two separate
+  // read-modify-write calls (one for the date, one for the notice) used to
+  // let the second call's read silently overwrite the first call's write.
+  if (action === "create") {
+    const outcome = await withBridgeData((data) => {
+      const now = new Date().toISOString();
+      const record: ImportantDate = {
+        id,
+        caseId,
+        caseName: body.caseName || "Your case",
+        title: body.title || "Important date",
+        date: body.date || "",
+        time: body.time,
+        description: body.description || "",
+        location: body.location,
+        status: "active",
+        createdAt: now,
+        updatedAt: now,
+      };
+      const existingIdx = data.importantDates.findIndex((d) => d.id === id);
+      if (existingIdx >= 0) data.importantDates[existingIdx] = record;
+      else data.importantDates.push(record);
 
-  if (body.action === "create") {
-    const record = await createImportantDate({
-      id: body.id,
-      caseId: body.caseId,
-      caseName: body.caseName || "Your case",
-      title: body.title || "Important date",
-      date: body.date || "",
-      time: body.time,
-      description: body.description || "",
-      location: body.location,
+      const notice: Notice = {
+        id: newNoticeId(),
+        caseId,
+        caseName: record.caseName,
+        type: "important_date_added",
+        subject: "New Important Date Added",
+        message: `Your lawyer has added an important date to your case.\n\n${record.title}\n${fmtDate(record.date)}${record.time ? ` at ${record.time}` : ""}\n\nThe date has been added to your Important Dates calendar.`,
+        firmName: "Your legal team",
+        sendingLawyer: "Your lawyer",
+        createdAt: now,
+      };
+      data.notices.push(notice);
+      return record;
     });
-    const notice: Notice = {
-      id: `notice-${Date.now()}-${Math.round(Math.random() * 1000)}`,
-      caseId: body.caseId,
-      caseName: record.caseName,
-      type: "important_date_added",
-      subject: "New Important Date Added",
-      message: `Your lawyer has added an important date to your case.\n\n${record.title}\n${fmtDate(record.date)}${record.time ? ` at ${record.time}` : ""}\n\nThe date has been added to your Important Dates calendar.`,
-      firmName: "Your legal team",
-      sendingLawyer: "Your lawyer",
-      createdAt: new Date().toISOString(),
-    };
-    await addNotice(notice);
-    return NextResponse.json({ ok: true, id: record.id });
+    return NextResponse.json({ ok: true, id: outcome.id });
   }
 
-  if (body.action === "update") {
+  if (action === "update") {
+    const existing = (await listImportantDates()).find((d) => d.id === id);
     const previousDate = existing?.date;
-    const record = await updateImportantDate(body.id, {
-      caseName: body.caseName ?? existing?.caseName,
-      title: body.title ?? existing?.title,
-      date: body.date ?? existing?.date,
-      time: body.time ?? existing?.time,
-      description: body.description ?? existing?.description,
-      location: body.location ?? existing?.location,
+    const outcome = await withBridgeData((data) => {
+      const idx = data.importantDates.findIndex((d) => d.id === id);
+      if (idx === -1) return null;
+      const record: ImportantDate = {
+        ...data.importantDates[idx],
+        caseName: body.caseName ?? data.importantDates[idx].caseName,
+        title: body.title ?? data.importantDates[idx].title,
+        date: body.date ?? data.importantDates[idx].date,
+        time: body.time ?? data.importantDates[idx].time,
+        description: body.description ?? data.importantDates[idx].description,
+        location: body.location ?? data.importantDates[idx].location,
+        updatedAt: new Date().toISOString(),
+      };
+      data.importantDates[idx] = record;
+
+      const dateChanged = previousDate && body.date && previousDate !== body.date;
+      const notice: Notice = {
+        id: newNoticeId(),
+        caseId,
+        caseName: record.caseName,
+        type: "important_date_changed",
+        subject: "Important Date Changed",
+        message: dateChanged
+          ? `Your ${record.title.toLowerCase()} date has changed from ${fmtDate(previousDate!)} to ${fmtDate(record.date)}.`
+          : `An important date in your case has been updated: ${record.title} — ${fmtDate(record.date)}${record.time ? ` at ${record.time}` : ""}.`,
+        firmName: "Your legal team",
+        sendingLawyer: "Your lawyer",
+        createdAt: new Date().toISOString(),
+      };
+      data.notices.push(notice);
+      return record;
     });
-    if (!record) {
+    if (!outcome) {
       return NextResponse.json({ ok: false, error: "Important date not found" }, { status: 404 });
     }
-    const dateChanged = previousDate && body.date && previousDate !== body.date;
-    const notice: Notice = {
-      id: `notice-${Date.now()}-${Math.round(Math.random() * 1000)}`,
-      caseId: body.caseId,
-      caseName: record.caseName,
-      type: "important_date_changed",
-      subject: "Important Date Changed",
-      message: dateChanged
-        ? `Your ${record.title.toLowerCase()} date has changed from ${fmtDate(previousDate!)} to ${fmtDate(record.date)}.`
-        : `An important date in your case has been updated: ${record.title} — ${fmtDate(record.date)}${record.time ? ` at ${record.time}` : ""}.`,
-      firmName: "Your legal team",
-      sendingLawyer: "Your lawyer",
-      createdAt: new Date().toISOString(),
-    };
-    await addNotice(notice);
-    return NextResponse.json({ ok: true, id: record.id });
+    return NextResponse.json({ ok: true, id: outcome.id });
   }
 
-  if (body.action === "cancel") {
-    const record = await cancelImportantDate(body.id);
-    if (!record) {
+  if (action === "cancel") {
+    const outcome = await withBridgeData((data) => {
+      const idx = data.importantDates.findIndex((d) => d.id === id);
+      if (idx === -1) return null;
+      const record: ImportantDate = { ...data.importantDates[idx], status: "cancelled", updatedAt: new Date().toISOString() };
+      data.importantDates[idx] = record;
+
+      const notice: Notice = {
+        id: newNoticeId(),
+        caseId,
+        caseName: record.caseName,
+        type: "important_date_cancelled",
+        subject: "Important Date Cancelled",
+        message: `The ${record.title.toLowerCase()} previously scheduled for ${fmtDate(record.date)} has been cancelled. Your legal team will provide additional information when available.`,
+        firmName: "Your legal team",
+        sendingLawyer: "Your lawyer",
+        createdAt: new Date().toISOString(),
+      };
+      data.notices.push(notice);
+      return record;
+    });
+    if (!outcome) {
       return NextResponse.json({ ok: false, error: "Important date not found" }, { status: 404 });
     }
-    const notice: Notice = {
-      id: `notice-${Date.now()}-${Math.round(Math.random() * 1000)}`,
-      caseId: body.caseId,
-      caseName: record.caseName,
-      type: "important_date_cancelled",
-      subject: "Important Date Cancelled",
-      message: `The ${record.title.toLowerCase()} previously scheduled for ${fmtDate(record.date)} has been cancelled. Your legal team will provide additional information when available.`,
-      firmName: "Your legal team",
-      sendingLawyer: "Your lawyer",
-      createdAt: new Date().toISOString(),
-    };
-    await addNotice(notice);
-    return NextResponse.json({ ok: true, id: record.id });
+    return NextResponse.json({ ok: true, id: outcome.id });
   }
 
   return NextResponse.json({ ok: false, error: "Unknown action" }, { status: 400 });

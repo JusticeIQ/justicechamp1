@@ -79,6 +79,19 @@ async function writeData(data: BridgeData): Promise<void> {
   }
 }
 
+// Runs a single read-modify-write cycle against the whole store, so a
+// request that needs to touch both notices and importantDates (e.g.
+// "create an important date AND generate a notice about it") does so
+// atomically from the caller's point of view -- one read, one write --
+// instead of two separate read/write round trips that could race and
+// clobber each other under Blob storage's read-after-write timing.
+export async function withBridgeData<T>(mutator: (data: BridgeData) => T): Promise<T> {
+  const data = await readData();
+  const result = mutator(data);
+  await writeData(data);
+  return result;
+}
+
 export async function listNotices(): Promise<Notice[]> {
   const data = await readData();
   return data.notices.slice().sort((a, b) => b.createdAt.localeCompare(a.createdAt));
