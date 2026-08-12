@@ -47,7 +47,7 @@ export default function NoticesPage() {
         ) : (
           <div className="space-y-3">
             {notices.map((n) => {
-              const unread = !readNoticeIds.includes(n.id);
+              const unread = !(readNoticeIds ?? []).includes(n.id);
               const open = openId === n.id;
               return (
                 <Card key={n.id} className={unread ? "border-teal-300" : undefined}>

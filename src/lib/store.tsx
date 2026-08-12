@@ -97,7 +97,9 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
       if (raw) {
-        setState(JSON.parse(raw));
+        // Merge onto emptyState() so fields added after a user's session was
+        // last persisted (e.g. readNoticeIds) are never undefined.
+        setState({ ...emptyState(), ...JSON.parse(raw) });
       }
     } catch {
       // ignore corrupt storage
@@ -380,10 +382,10 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const markNoticeRead = useCallback((id: string) => {
-    setState((prev) => (prev.readNoticeIds.includes(id) ? prev : { ...prev, readNoticeIds: [...prev.readNoticeIds, id] }));
+    setState((prev) => ((prev.readNoticeIds ?? []).includes(id) ? prev : { ...prev, readNoticeIds: [...(prev.readNoticeIds ?? []), id] }));
   }, []);
 
-  const unreadNoticeCount = notices.filter((n) => !state.readNoticeIds.includes(n.id)).length;
+  const unreadNoticeCount = notices.filter((n) => !(state.readNoticeIds ?? []).includes(n.id)).length;
 
   const value = useMemo<AppContextValue>(
     () => ({
