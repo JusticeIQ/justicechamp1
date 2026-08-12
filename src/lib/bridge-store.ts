@@ -1,69 +1,105 @@
+import { get, put } from "@vercel/blob";
 import fs from "fs";
-import os from "os";
 import path from "path";
 import { ImportantDate, Notice } from "./types";
 
-// Server-only JSON-file-backed store for data pushed in from JusticeIQ over
-// the local bridge API. This is intentionally separate from the client-side
-// demo store (src/lib/store.tsx, which is localStorage-backed) because this
-// data originates server-side, from another app, and must be visible to
-// every browser tab polling this JusticeChamp instance — not just the tab
-// that happened to trigger it.
+// Server-only store for data pushed in from JusticeIQ over the bridge API.
+// This is intentionally separate from the client-side demo store
+// (src/lib/store.tsx, which is localStorage-backed) because this data
+// originates server-side, from another app, and must be visible to every
+// browser tab polling this JusticeChamp instance -- not just the tab that
+// happened to trigger it.
 //
-// This is a demo-appropriate persistence layer (a JSON file next to the
-// dev server), not a production data store. See docs/ROADMAP.md.
+// In production this is backed by Vercel Blob (persists across serverless
+// invocations/instances). Locally, without a BLOB_READ_WRITE_TOKEN, it
+// falls back to a JSON file on disk -- fine for a single long-lived dev
+// server process, but NOT reliable on Vercel, where process.cwd() is
+// read-only and every request can land on a different, short-lived
+// instance with its own /tmp. See docs/ROADMAP.md for the real long-term
+// fix (a hosted DB) if this ever needs to be more than a demo.
 
 interface BridgeData {
   notices: Notice[];
   importantDates: ImportantDate[];
 }
 
-// Vercel's deployment bundle (process.cwd()) is read-only at runtime, so a
-// local "data/" folder only works for local dev. In production (and any
-// other read-only serverless filesystem) we fall back to the OS tmp dir,
-// which is writable. This is still a demo-appropriate, best-effort store
-// (not guaranteed to survive across cold starts/instances) -- see
-// docs/ROADMAP.md for the real fix (a hosted KV/DB).
-const DATA_DIR = process.env.VERCEL ? path.join(os.tmpdir(), "justicechamp-bridge") : path.join(process.cwd(), "data");
+const EMPTY_DATA: BridgeData = { notices: [], importantDates: [] };
+
+const USE_BLOB = !!process.env.BLOB_READ_WRITE_TOKEN;
+const BLOB_PATHNAME = "bridge-store.json";
+
+const DATA_DIR = path.join(process.cwd(), "data");
 const DATA_FILE = path.join(DATA_DIR, "bridge-store.json");
 
-function readData(): BridgeData {
+function normalize(parsed: unknown): BridgeData {
+  const p = (parsed ?? {}) as Partial<BridgeData>;
+  return { notices: p.notices ?? [], importantDates: p.importantDates ?? [] };
+}
+
+async function readData(): Promise<BridgeData> {
+  if (USE_BLOB) {
+    try {
+      const result = await get(BLOB_PATHNAME, { access: "private" });
+      if (!result) return { ...EMPTY_DATA };
+      const text = await new Response(result.stream).text();
+      return normalize(JSON.parse(text));
+    } catch {
+      return { ...EMPTY_DATA };
+    }
+  }
   try {
     const raw = fs.readFileSync(DATA_FILE, "utf-8");
-    const parsed = JSON.parse(raw);
-    return { notices: parsed.notices ?? [], importantDates: parsed.importantDates ?? [] };
+    return normalize(JSON.parse(raw));
   } catch {
-    return { notices: [], importantDates: [] };
+    return { ...EMPTY_DATA };
   }
 }
 
-function writeData(data: BridgeData) {
+async function writeData(data: BridgeData): Promise<void> {
+  if (USE_BLOB) {
+    try {
+      await put(BLOB_PATHNAME, JSON.stringify(data), {
+        access: "private",
+        addRandomSuffix: false,
+        allowOverwrite: true,
+        contentType: "application/json",
+      });
+    } catch {
+      // Best-effort: if the blob write fails, the bridge falls back to
+      // in-memory-only for that request lifecycle.
+    }
+    return;
+  }
   try {
     if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
     fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
   } catch {
-    // Best-effort: if the filesystem is read-only (e.g. some serverless hosts),
-    // the bridge falls back to in-memory-only for that request lifecycle.
+    // Best-effort: if the filesystem is read-only, fall back to
+    // in-memory-only for that request lifecycle.
   }
 }
 
-export function listNotices(): Notice[] {
-  return readData().notices.slice().sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+export async function listNotices(): Promise<Notice[]> {
+  const data = await readData();
+  return data.notices.slice().sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
-export function listImportantDates(): ImportantDate[] {
-  return readData().importantDates.slice().sort((a, b) => a.date.localeCompare(b.date));
+export async function listImportantDates(): Promise<ImportantDate[]> {
+  const data = await readData();
+  return data.importantDates.slice().sort((a, b) => a.date.localeCompare(b.date));
 }
 
-export function addNotice(notice: Notice): Notice {
-  const data = readData();
+export async function addNotice(notice: Notice): Promise<Notice> {
+  const data = await readData();
   data.notices.push(notice);
-  writeData(data);
+  await writeData(data);
   return notice;
 }
 
-export function createImportantDate(input: Omit<ImportantDate, "createdAt" | "updatedAt" | "status">): ImportantDate {
-  const data = readData();
+export async function createImportantDate(
+  input: Omit<ImportantDate, "createdAt" | "updatedAt" | "status">
+): Promise<ImportantDate> {
+  const data = await readData();
   const now = new Date().toISOString();
   const record: ImportantDate = { ...input, status: "active", createdAt: now, updatedAt: now };
   const existingIdx = data.importantDates.findIndex((d) => d.id === input.id);
@@ -72,19 +108,22 @@ export function createImportantDate(input: Omit<ImportantDate, "createdAt" | "up
   } else {
     data.importantDates.push(record);
   }
-  writeData(data);
+  await writeData(data);
   return record;
 }
 
-export function updateImportantDate(id: string, updates: Partial<ImportantDate>): ImportantDate | null {
-  const data = readData();
+export async function updateImportantDate(
+  id: string,
+  updates: Partial<ImportantDate>
+): Promise<ImportantDate | null> {
+  const data = await readData();
   const idx = data.importantDates.findIndex((d) => d.id === id);
   if (idx === -1) return null;
   data.importantDates[idx] = { ...data.importantDates[idx], ...updates, updatedAt: new Date().toISOString() };
-  writeData(data);
+  await writeData(data);
   return data.importantDates[idx];
 }
 
-export function cancelImportantDate(id: string): ImportantDate | null {
+export async function cancelImportantDate(id: string): Promise<ImportantDate | null> {
   return updateImportantDate(id, { status: "cancelled" });
 }

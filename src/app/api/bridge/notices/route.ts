@@ -38,10 +38,10 @@ export async function POST(req: NextRequest) {
     createdAt: body.sentAt || new Date().toISOString(),
   };
 
-  addNotice(notice);
+  await addNotice(notice);
   return NextResponse.json({ ok: true, id: notice.id });
 }
 
 export async function GET() {
-  return NextResponse.json({ notices: listNotices() });
+  return NextResponse.json({ notices: await listNotices() });
 }

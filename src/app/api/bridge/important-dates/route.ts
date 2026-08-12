@@ -33,10 +33,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: "id, caseId, and action are required" }, { status: 400 });
   }
 
-  const existing = listImportantDates().find((d) => d.id === body.id);
+  const existing = (await listImportantDates()).find((d) => d.id === body.id);
 
   if (body.action === "create") {
-    const record = createImportantDate({
+    const record = await createImportantDate({
       id: body.id,
       caseId: body.caseId,
       caseName: body.caseName || "Your case",
@@ -57,13 +57,13 @@ export async function POST(req: NextRequest) {
       sendingLawyer: "Your lawyer",
       createdAt: new Date().toISOString(),
     };
-    addNotice(notice);
+    await addNotice(notice);
     return NextResponse.json({ ok: true, id: record.id });
   }
 
   if (body.action === "update") {
     const previousDate = existing?.date;
-    const record = updateImportantDate(body.id, {
+    const record = await updateImportantDate(body.id, {
       caseName: body.caseName ?? existing?.caseName,
       title: body.title ?? existing?.title,
       date: body.date ?? existing?.date,
@@ -88,12 +88,12 @@ export async function POST(req: NextRequest) {
       sendingLawyer: "Your lawyer",
       createdAt: new Date().toISOString(),
     };
-    addNotice(notice);
+    await addNotice(notice);
     return NextResponse.json({ ok: true, id: record.id });
   }
 
   if (body.action === "cancel") {
-    const record = cancelImportantDate(body.id);
+    const record = await cancelImportantDate(body.id);
     if (!record) {
       return NextResponse.json({ ok: false, error: "Important date not found" }, { status: 404 });
     }
@@ -108,7 +108,7 @@ export async function POST(req: NextRequest) {
       sendingLawyer: "Your lawyer",
       createdAt: new Date().toISOString(),
     };
-    addNotice(notice);
+    await addNotice(notice);
     return NextResponse.json({ ok: true, id: record.id });
   }
 
@@ -116,5 +116,5 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET() {
-  return NextResponse.json({ importantDates: listImportantDates() });
+  return NextResponse.json({ importantDates: await listImportantDates() });
 }
