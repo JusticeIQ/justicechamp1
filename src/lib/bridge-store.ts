@@ -1,4 +1,5 @@
 import fs from "fs";
+import os from "os";
 import path from "path";
 import { ImportantDate, Notice } from "./types";
 
@@ -17,7 +18,13 @@ interface BridgeData {
   importantDates: ImportantDate[];
 }
 
-const DATA_DIR = path.join(process.cwd(), "data");
+// Vercel's deployment bundle (process.cwd()) is read-only at runtime, so a
+// local "data/" folder only works for local dev. In production (and any
+// other read-only serverless filesystem) we fall back to the OS tmp dir,
+// which is writable. This is still a demo-appropriate, best-effort store
+// (not guaranteed to survive across cold starts/instances) -- see
+// docs/ROADMAP.md for the real fix (a hosted KV/DB).
+const DATA_DIR = process.env.VERCEL ? path.join(os.tmpdir(), "justicechamp-bridge") : path.join(process.cwd(), "data");
 const DATA_FILE = path.join(DATA_DIR, "bridge-store.json");
 
 function readData(): BridgeData {
