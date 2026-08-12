@@ -179,3 +179,39 @@ export interface ActivityLogItem {
     message: string;
     timestamp: string;
 }
+
+// --- Feature: JusticeIQ -> JusticeChamp bridge (Notices & Important Dates) ---
+// These are populated from JusticeIQ over the local bridge API
+// (src/app/api/bridge/*) rather than from the client-side demo store, since
+// they represent lawyer-approved data pushed in from the connected
+// JusticeIQ lawyer platform. See docs/INTEGRATION_SPEC.md.
+
+export type NoticeType = "case_update" | "important_date_added" | "important_date_changed" | "important_date_cancelled";
+
+export interface Notice {
+  id: string;
+  caseId: string;
+  caseName: string;
+  type: NoticeType;
+  subject: string;
+  message: string;
+  firmName: string;
+  sendingLawyer: string;
+  createdAt: string;
+}
+
+export type ImportantDateStatus = "active" | "cancelled";
+
+export interface ImportantDate {
+  id: string;
+  caseId: string;
+  caseName: string;
+  title: string;
+  date: string;
+  time?: string;
+  description: string;
+  location?: string;
+  status: ImportantDateStatus;
+  createdAt: string;
+  updatedAt: string;
+}

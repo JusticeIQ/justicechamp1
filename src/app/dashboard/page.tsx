@@ -16,7 +16,7 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 export default function DashboardPage() {
-  const { user, claims, notifications, activityLog } = useAppState();
+  const { user, claims, notifications, activityLog, notices, readNoticeIds, importantDates, unreadNoticeCount } = useAppState();
 
   const activeClaims = claims.filter((c) => c.status !== "draft");
   const draftClaims = claims.filter((c) => c.status === "draft");
@@ -39,6 +39,56 @@ export default function DashboardPage() {
         </div>
 
         <DisclaimerBanner />
+
+        <div className="grid sm:grid-cols-2 gap-4">
+          <Card>
+            <div className="flex items-center justify-between">
+              <h2 className="font-semibold text-navy-900 text-sm">Important Dates</h2>
+              <Link href="/important-dates" className="text-xs text-teal-600 hover:underline">View all →</Link>
+            </div>
+            {(() => {
+              const todayStr = new Date().toISOString().slice(0, 10);
+              const next = importantDates
+                .filter((d) => d.status === "active" && d.date >= todayStr)
+                .sort((a, b) => a.date.localeCompare(b.date))[0];
+              if (!next) {
+                return <p className="text-sm text-navy-700 mt-3">No upcoming dates on file.</p>;
+              }
+              return (
+                <div className="mt-3">
+                  <p className="text-[11px] uppercase tracking-wide text-navy-700/70 font-medium">Next important date</p>
+                  <p className="font-bold text-navy-900 mt-1">{next.title}</p>
+                  <p className="text-sm text-teal-600 font-medium mt-0.5">
+                    {new Date(`${next.date}T00:00:00`).toLocaleDateString(undefined, { month: "long", day: "numeric" })}
+                    {next.time ? ` · ${next.time}` : ""}
+                  </p>
+                  <p className="text-xs text-navy-700 mt-1">{next.caseName}</p>
+                </div>
+              );
+            })()}
+          </Card>
+
+          <Card>
+            <div className="flex items-center justify-between">
+              <h2 className="font-semibold text-navy-900 text-sm">Notices</h2>
+              <Link href="/notices" className="text-xs text-teal-600 hover:underline">View notices →</Link>
+            </div>
+            {unreadNoticeCount > 0 && (
+              <Badge tone="red">{unreadNoticeCount} New Notice{unreadNoticeCount === 1 ? "" : "s"}</Badge>
+            )}
+            {notices.length === 0 ? (
+              <p className="text-sm text-navy-700 mt-3">No notices yet.</p>
+            ) : (
+              <ul className="mt-3 space-y-2">
+                {notices.slice(0, 3).map((n) => (
+                  <li key={n.id} className={`text-sm ${readNoticeIds.includes(n.id) ? "text-navy-700" : "text-navy-900 font-semibold"}`}>
+                    {n.subject}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
+        </div>
 
         {claims.length === 0 ? (
           <EmptyState

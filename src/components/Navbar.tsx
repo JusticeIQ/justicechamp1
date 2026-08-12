@@ -10,6 +10,8 @@ const NAV_ITEMS = [
   { href: "/report-incident", label: "Report an Incident" },
   { href: "/claims", label: "My Claims" },
   { href: "/documents", label: "Documents" },
+  { href: "/important-dates", label: "Important Dates" },
+  { href: "/notices", label: "Notices" },
   { href: "/resources", label: "Resources" },
   { href: "/faq", label: "FAQ" },
   { href: "/help", label: "Help" },
@@ -18,7 +20,7 @@ const NAV_ITEMS = [
 export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { isAuthenticated, user, logout } = useAppState();
+  const { isAuthenticated, user, logout, unreadNoticeCount } = useAppState();
 
   return (
     <header className="sticky top-0 z-40 bg-navy-950/95 backdrop-blur border-b border-white/10">
@@ -41,13 +43,16 @@ export function Navbar() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`px-3 py-2 rounded-lg text-sm font-medium focus-ring transition-colors ${
+                className={`relative px-3 py-2 rounded-lg text-sm font-medium focus-ring transition-colors ${
                   pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href))
                     ? "text-white bg-white/10"
                     : "text-white/70 hover:text-white hover:bg-white/5"
                 }`}
               >
                 {item.label}
+                {item.href === "/notices" && unreadNoticeCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-teal-400 border border-navy-950" aria-label={`${unreadNoticeCount} unread notices`} />
+                )}
               </Link>
             ))}
           </nav>

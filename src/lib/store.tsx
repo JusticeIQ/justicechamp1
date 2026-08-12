@@ -7,7 +7,9 @@ import {
   ClaimCategory,
   ClaimDocument,
   DemoUser,
+  ImportantDate,
   IntakeAnswer,
+  Notice,
   NotificationItem,
   TimelineEvent,
 } from "./types";
@@ -23,10 +25,11 @@ interface AppState {
   claims: Claim[];
   notifications: NotificationItem[];
   activityLog: ActivityLogItem[];
+  readNoticeIds: string[];
 }
 
 function emptyState(): AppState {
-  return { isAuthenticated: false, user: null, claims: [], notifications: [], activityLog: [] };
+  return { isAuthenticated: false, user: null, claims: [], notifications: [], activityLog: [], readNoticeIds: [] };
 }
 
 function seededState(): AppState {
@@ -48,6 +51,7 @@ function seededState(): AppState {
       { id: "a3", message: "Submitted employment incident report", timestamp: "2026-04-05T09:00:00Z" },
       { id: "a4", message: "Generated claim-readiness score for both claims", timestamp: "2026-06-10T15:30:00Z" },
     ],
+    readNoticeIds: [],
   };
 }
 
@@ -74,6 +78,11 @@ interface AppContextValue extends AppState {
   logActivity: (message: string) => void;
   markNotificationRead: (id: string) => void;
   markLawyerMessageRead: (claimId: string, messageId: string) => void;
+  notices: Notice[];
+  importantDates: ImportantDate[];
+  unreadNoticeCount: number;
+  markNoticeRead: (id: string) => void;
+  refreshBridgeData: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -81,6 +90,8 @@ const AppContext = createContext<AppContextValue | null>(null);
 export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<AppState>(emptyState());
   const [hydrated, setHydrated] = useState(false);
+  const [notices, setNotices] = useState<Notice[]>([]);
+  const [importantDates, setImportantDates] = useState<ImportantDate[]>([]);
 
   useEffect(() => {
     try {
@@ -102,6 +113,37 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       // storage may be unavailable (e.g. private browsing quota) — fail silently
     }
   }, [state, hydrated]);
+
+  const refreshBridgeData = useCallback(async () => {
+    try {
+      const [noticesRes, datesRes] = await Promise.all([
+        fetch("/api/bridge/notices", { cache: "no-store" }),
+        fetch("/api/bridge/important-dates", { cache: "no-store" }),
+      ]);
+      if (noticesRes.ok) {
+        const data = await noticesRes.json();
+        setNotices(data.notices ?? []);
+      }
+      if (datesRes.ok) {
+        const data = await datesRes.json();
+        setImportantDates(data.importantDates ?? []);
+      }
+    } catch {
+      // JusticeIQ / the bridge may be unavailable — fail silently and retry on the next poll
+    }
+  }, []);
+
+  // Feature 1 & 2: JusticeIQ -> JusticeChamp bridge. Notices and Important
+  // Dates are pushed in from JusticeIQ server-side (see src/app/api/bridge),
+  // so this app polls its own bridge API on an interval to pick up new
+  // items without needing a full page reload — a lightweight stand-in for
+  // real-time updates for the demo.
+  useEffect(() => {
+    if (!hydrated || !state.isAuthenticated) return;
+    refreshBridgeData();
+    const interval = setInterval(refreshBridgeData, 4000);
+    return () => clearInterval(interval);
+  }, [hydrated, state.isAuthenticated, refreshBridgeData]);
 
   const logActivity = useCallback((message: string) => {
     setState((prev) => ({
@@ -131,7 +173,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       consentClaimComms: true,
       accountType: "consumer",
     };
-    setState({ isAuthenticated: true, user: newUser, claims: [], notifications: [], activityLog: [{ id: "a1", message: "Account created", timestamp: new Date().toISOString() }] });
+    setState({ isAuthenticated: true, user: newUser, claims: [], notifications: [], activityLog: [{ id: "a1", message: "Account created", timestamp: new Date().toISOString() }], readNoticeIds: [] });
     return { ok: true };
   }, []);
 
@@ -337,6 +379,12 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     }));
   }, []);
 
+  const markNoticeRead = useCallback((id: string) => {
+    setState((prev) => (prev.readNoticeIds.includes(id) ? prev : { ...prev, readNoticeIds: [...prev.readNoticeIds, id] }));
+  }, []);
+
+  const unreadNoticeCount = notices.filter((n) => !state.readNoticeIds.includes(n.id)).length;
+
   const value = useMemo<AppContextValue>(
     () => ({
       ...state,
@@ -362,6 +410,11 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       logActivity,
       markNotificationRead,
       markLawyerMessageRead,
+      notices,
+      importantDates,
+      unreadNoticeCount,
+      markNoticeRead,
+      refreshBridgeData,
     }),
     [
       state,
@@ -387,6 +440,11 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       logActivity,
       markNotificationRead,
       markLawyerMessageRead,
+      notices,
+      importantDates,
+      unreadNoticeCount,
+      markNoticeRead,
+      refreshBridgeData,
     ]
   );
 

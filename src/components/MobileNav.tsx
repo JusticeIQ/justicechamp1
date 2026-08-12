@@ -6,15 +6,15 @@ import { useAppState } from "@/lib/store";
 
 const ITEMS = [
   { href: "/dashboard", label: "Home", icon: "🏠" },
-  { href: "/report-incident", label: "Report", icon: "📝" },
-  { href: "/rate-my-claim", label: "Rate", icon: "⭐" },
   { href: "/claims", label: "Claims", icon: "📁" },
+  { href: "/important-dates", label: "Dates", icon: "📅" },
+  { href: "/notices", label: "Notices", icon: "🔔" },
   { href: "/profile", label: "Profile", icon: "👤" },
 ];
 
 export function MobileNav() {
   const pathname = usePathname();
-  const { isAuthenticated } = useAppState();
+  const { isAuthenticated, unreadNoticeCount } = useAppState();
   if (!isAuthenticated) return null;
 
   return (
@@ -26,9 +26,14 @@ export function MobileNav() {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center justify-center py-2 text-[11px] gap-0.5 focus-ring ${active ? "text-teal-600 font-semibold" : "text-navy-700"}`}
+              className={`relative flex flex-col items-center justify-center py-2 text-[11px] gap-0.5 focus-ring ${active ? "text-teal-600 font-semibold" : "text-navy-700"}`}
             >
-              <span aria-hidden>{item.icon}</span>
+              <span aria-hidden className="relative">
+                {item.icon}
+                {item.href === "/notices" && unreadNoticeCount > 0 && (
+                  <span className="absolute -top-0.5 -right-1.5 h-2 w-2 rounded-full bg-teal-500" />
+                )}
+              </span>
               {item.label}
             </Link>
           );
