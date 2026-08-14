@@ -2,7 +2,7 @@
 
 ## Product architecture
 
-JusticeChamp is the consumer-facing application within the JusticeIQ legal intelligence
+JusticeChamp is the consumer-facing application within the SolonIQ legal intelligence
 ecosystem. Its core loop is:
 
 1. **Document** — guided, plain-language incident intake (Personal Injury or Employment Law)

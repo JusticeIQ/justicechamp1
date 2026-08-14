@@ -36,7 +36,7 @@ export default function NoticesPage() {
         <Breadcrumbs items={[{ label: "Home", href: "/dashboard" }, { label: "Notices" }]} />
         <div>
           <h1 className="text-2xl font-bold text-navy-900">Notices</h1>
-          <p className="text-navy-700 text-sm mt-1">Updates your legal team has shared from your case, sent from JusticeIQ.</p>
+          <p className="text-navy-700 text-sm mt-1">Updates your legal team has shared from your case, sent from SolonIQ.</p>
         </div>
 
         {notices.length === 0 ? (

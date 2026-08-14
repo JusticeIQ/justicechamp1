@@ -180,11 +180,11 @@ export interface ActivityLogItem {
     timestamp: string;
 }
 
-// --- Feature: JusticeIQ -> JusticeChamp bridge (Notices & Important Dates) ---
-// These are populated from JusticeIQ over the local bridge API
+// --- Feature: SolonIQ -> JusticeChamp bridge (Notices & Important Dates) ---
+// These are populated from SolonIQ over the local bridge API
 // (src/app/api/bridge/*) rather than from the client-side demo store, since
 // they represent lawyer-approved data pushed in from the connected
-// JusticeIQ lawyer platform. See docs/INTEGRATION_SPEC.md.
+// SolonIQ lawyer platform. See docs/INTEGRATION_SPEC.md.
 
 export type NoticeType = "case_update" | "important_date_added" | "important_date_changed" | "important_date_cancelled";
 

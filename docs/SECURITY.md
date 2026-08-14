@@ -25,7 +25,7 @@
   private Supabase Storage bucket (`claim-documents`), with storage-level RLS restricting access
   to the claim's owner (and, with consent, a matched lawyer's role).
 - **Role-based access concepts.** `user_profiles.account_type` distinguishes `consumer`,
-  `lawyer`, and `admin` roles for the broader JusticeIQ ecosystem; production RLS policies would
+  `lawyer`, and `admin` roles for the broader SolonIQ ecosystem; production RLS policies would
   add lawyer-scoped read access to `consultation_requests` where they are the requested lawyer.
 - **Audit logging.** `activity_log` records key actions per user; `docs/ROADMAP.md` calls for a
   dedicated immutable audit trail (e.g. via Postgres triggers or a logging service) for

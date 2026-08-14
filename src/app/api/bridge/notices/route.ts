@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { addNotice, listNotices } from "@/lib/bridge-store";
 import { Notice } from "@/lib/types";
 
-// Inbound webhook from JusticeIQ: creates a Notice once a lawyer has
+// Inbound webhook from SolonIQ: creates a Notice once a lawyer has
 // explicitly approved and sent a client update. See docs/INTEGRATION_SPEC.md
 // ("Authentication between systems").
 const WEBHOOK_SECRET = process.env.JUSTICECHAMP_WEBHOOK_SECRET || "demo-shared-secret-justiceiq-justicechamp";

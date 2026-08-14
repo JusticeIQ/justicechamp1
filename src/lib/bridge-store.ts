@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 import { ImportantDate, Notice } from "./types";
 
-// Server-only store for data pushed in from JusticeIQ over the bridge API.
+// Server-only store for data pushed in from SolonIQ over the bridge API.
 // This is intentionally separate from the client-side demo store
 // (src/lib/store.tsx, which is localStorage-backed) because this data
 // originates server-side, from another app, and must be visible to every

@@ -28,7 +28,7 @@
 
 ## Long-term
 
-- Deeper JusticeIQ ecosystem integration: shared identity across JusticeChamp and other JusticeIQ
+- Deeper SolonIQ ecosystem integration: shared identity across JusticeChamp and other SolonIQ
   products, unified analytics, and cross-product lawyer capacity management
 - Additional legal categories beyond Personal Injury and Employment Law
 - SOC 2 Type II readiness: formal audit logging, access reviews, incident response runbooks

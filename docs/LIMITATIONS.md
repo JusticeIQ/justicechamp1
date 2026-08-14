@@ -25,4 +25,4 @@ partners, and technical evaluators. It is **not** production-hardened. Known lim
 - **No automated test suite.** `docs/TEST_CHECKLIST.md` provides a manual QA checklist; unit/e2e
   tests are a roadmap item.
 - **No multi-tenant lawyer/admin experience.** `account_type` exists in the schema for future
-  JusticeIQ integration, but only the consumer experience is built in this MVP.
+  SolonIQ integration, but only the consumer experience is built in this MVP.

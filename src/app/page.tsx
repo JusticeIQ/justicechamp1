@@ -27,7 +27,7 @@ export default function LandingPage() {
           <div className="container-page py-20 md:py-28 grid md:grid-cols-2 gap-10 items-center">
             <div>
               <div className="flex items-center gap-2 mb-5">
-                <Badge tone="teal">Powered by JusticeIQ™</Badge>
+                <Badge tone="teal">Powered by SolonIQ™</Badge>
               </div>
           <h1 className="text-4xl md:text-5xl font-bold leading-tight">
                       Life is unpredictable.<br />Being prepared doesn't have to be.

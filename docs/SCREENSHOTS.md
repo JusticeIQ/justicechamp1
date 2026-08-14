@@ -3,7 +3,7 @@
 For investor decks, lawyer demos, or partner walkthroughs, capture these screens in order (they
 map directly to the demo journey in `/demo` and the README):
 
-1. **Landing page** (`/`) — hero + JusticeIQ ecosystem badge + "Rate My Claim" preview card
+1. **Landing page** (`/`) — hero + SolonIQ ecosystem badge + "Rate My Claim" preview card
 2. **Login** (`/login`) — highlight the one-click "Continue with demo account" button
 3. **Dashboard** (`/dashboard`) — after loading demo data, showing both seeded claims and progress
    cards

@@ -131,12 +131,12 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         setImportantDates(data.importantDates ?? []);
       }
     } catch {
-      // JusticeIQ / the bridge may be unavailable — fail silently and retry on the next poll
+      // SolonIQ / the bridge may be unavailable — fail silently and retry on the next poll
     }
   }, []);
 
-  // Feature 1 & 2: JusticeIQ -> JusticeChamp bridge. Notices and Important
-  // Dates are pushed in from JusticeIQ server-side (see src/app/api/bridge),
+  // Feature 1 & 2: SolonIQ -> JusticeChamp bridge. Notices and Important
+  // Dates are pushed in from SolonIQ server-side (see src/app/api/bridge),
   // so this app polls its own bridge API on an interval to pick up new
   // items without needing a full page reload — a lightweight stand-in for
   // real-time updates for the demo.
@@ -341,7 +341,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
           return { ...c, documents, updatedAt: new Date().toISOString() };
         }),
       }));
-      logActivity(`Sent document to your lawyer's JusticeIQ dashboard: ${docName || docId}`);
+      logActivity(`Sent document to your lawyer's SolonIQ dashboard: ${docName || docId}`);
     },
     [logActivity]
   );

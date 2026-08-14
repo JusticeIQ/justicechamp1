@@ -2,7 +2,7 @@
 
 JusticeChamp helps members of the public document incidents, organize evidence, understand the
 readiness of a potential legal claim, and connect with appropriate lawyers. It is the
-consumer-facing application within the broader **JusticeIQ™** legal intelligence ecosystem.
+consumer-facing application within the broader **SolonIQ™** legal intelligence ecosystem.
 
 This MVP supports two legal categories: **Personal Injury** and **Employment Law**.
 
@@ -61,7 +61,7 @@ justicechamp/
 
 | Route | Description |
 |---|---|
-| `/` | Landing page, JusticeIQ ecosystem positioning |
+| `/` | Landing page, SolonIQ ecosystem positioning |
 | `/login`, `/signup`, `/forgot-password` | Auth entry points + one-click demo access |
 | `/dashboard` | Consumer dashboard: claims, tasks, deadlines, activity |
 | `/report-incident` | Category picker (Personal Injury vs. Employment) |

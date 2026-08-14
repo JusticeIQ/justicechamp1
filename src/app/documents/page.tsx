@@ -60,7 +60,7 @@ export default function DocumentsPage() {
   function handleSendToLawyer(docId: string, name: string) {
     if (!claim) return;
     sendDocumentToLawyer(claim.id, docId);
-    setNotice(`Sent "${name}" to your lawyer's JusticeIQ dashboard (simulated for this demo — the two apps don't share a live connection yet).`);
+    setNotice(`Sent "${name}" to your lawyer's SolonIQ dashboard (simulated for this demo — the two apps don't share a live connection yet).`);
     setTimeout(() => setNotice(null), 5000);
   }
 
@@ -164,7 +164,7 @@ export default function DocumentsPage() {
                 <Card>
                   <h2 className="font-semibold text-navy-900 text-sm">Sending documents to your lawyer</h2>
                   <p className="text-xs text-navy-700 mt-1">
-                    Once you request a consultation, your lawyer gets access to your JusticeIQ dashboard for this matter.
+                    Once you request a consultation, your lawyer gets access to your SolonIQ dashboard for this matter.
                     Use "Send to your lawyer" on any document — including photos and videos — to flag it for their review.
                   </p>
                 </Card>

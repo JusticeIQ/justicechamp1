@@ -7,7 +7,7 @@ export function Footer() {
         <div className="col-span-2 md:col-span-1">
           <p className="text-white font-semibold">JusticeChamp™</p>
                     <p className="text-teal-400 text-xs font-medium mt-1">Your Personal Legal Resource</p>
-          <p className="mt-2 text-white/50 text-xs">Part of the JusticeIQ™ legal intelligence ecosystem.</p>
+          <p className="mt-2 text-white/50 text-xs">Part of the SolonIQ™ legal intelligence ecosystem.</p>
         </div>
         <div>
           <p className="text-white/90 font-medium mb-2">Product</p>
@@ -35,7 +35,7 @@ export function Footer() {
         </div>
       </div>
       <div className="border-t border-white/10 py-4 text-xs text-white/40 text-center px-4">
-        JusticeChamp is not a law firm and does not provide legal advice or representation. © 2026 JusticeIQ Technologies, Inc. Demonstration product — all sample data is fictional.
+        JusticeChamp is not a law firm and does not provide legal advice or representation. © 2026 SolonIQ Technologies, Inc. Demonstration product — all sample data is fictional.
       </div>
     </footer>
   );

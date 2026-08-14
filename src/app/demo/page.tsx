@@ -7,7 +7,7 @@ import { Card, Button, Badge } from "@/components/ui";
 import { useAppState } from "@/lib/store";
 
 const JOURNEY = [
-  { step: 1, title: "Open the landing page", detail: "Introduces JusticeChamp and the JusticeIQ ecosystem.", href: "/" },
+  { step: 1, title: "Open the landing page", detail: "Introduces JusticeChamp and the SolonIQ ecosystem.", href: "/" },
   { step: 2, title: "Sign in or use demo access", detail: "One click loads a seeded demo consumer account.", href: "/login" },
   { step: 3, title: "View the dashboard", detail: "See active claims, tasks, documents, and reminders at a glance.", href: "/dashboard" },
   { step: 4, title: "Start a new incident report", detail: "Begin the guided intake workflow.", href: "/report-incident" },

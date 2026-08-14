@@ -75,7 +75,7 @@ export default function ClaimDetailPage() {
               </div>
               <p className="text-xs text-navy-700 mt-1">
                 Confidential updates your lawyer posts to this claim appear here. This demo simulates delivery from the
-                firm's JusticeIQ dashboard — the two apps don't share a live connection yet.
+                firm's SolonIQ dashboard — the two apps don't share a live connection yet.
               </p>
               {claim.lawyerMessages.length === 0 ? (
                 <p className="text-sm text-navy-700 mt-3">No messages yet. Once you're matched with a lawyer, updates they post will show up here.</p>
