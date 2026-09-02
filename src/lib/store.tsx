@@ -41,7 +41,7 @@ function seededState(): AppState {
     claims: [claim1, claim2],
     notifications: [
       { id: "n1", message: "New match available for your employment claim.", createdAt: "2026-06-09T10:00:00Z", read: false, type: "match" },
-      { id: "n2", message: "Reminder: California personal injury filing deadline is approaching.", createdAt: "2026-06-11T08:00:00Z", read: false, type: "deadline" },
+      { id: "n2", message: "Reminder: New York personal injury filing deadline is approaching.", createdAt: "2026-06-11T08:00:00Z", read: false, type: "deadline" },
       { id: "n3", message: "Your motor vehicle claim summary is ready to review.", createdAt: "2026-06-10T15:30:00Z", read: true, type: "task" },
       { id: "n4", message: "New secure message from Devon Whitmore about your employment claim.", createdAt: "2026-06-12T09:15:00Z", read: false, type: "message" },
     ],
