@@ -11,17 +11,17 @@
 -- ---------------------------------------------------------------------
 
 insert into public.law_firms (id, name, jurisdiction, verified_partner) values
-  ('11111111-1111-1111-1111-111111111101', 'Alden & Cross Injury Law', 'California', true),
-  ('11111111-1111-1111-1111-111111111102', 'Coastal Advocates LLP', 'California', true),
-  ('11111111-1111-1111-1111-111111111103', 'Whitmore Employment Law Group', 'California', true),
-  ('11111111-1111-1111-1111-111111111104', 'Park & Nguyen Workplace Counsel', 'California', true)
+  ('11111111-1111-1111-1111-111111111101', 'Alden & Cross Injury Law', 'New York', true),
+  ('11111111-1111-1111-1111-111111111102', 'Coastal Advocates LLP', 'New York', true),
+  ('11111111-1111-1111-1111-111111111103', 'Whitmore Employment Law Group', 'New York', true),
+  ('11111111-1111-1111-1111-111111111104', 'Park & Nguyen Workplace Counsel', 'New York', true)
 on conflict (id) do nothing;
 
 insert into public.lawyer_profiles (id, firm_id, full_name, practice_areas, jurisdiction, languages, years_experience, description, availability, capacity) values
-  ('22222222-2222-2222-2222-222222222201', '11111111-1111-1111-1111-111111111101', 'Michael Alden', array['personal_injury'], 'California', array['English','Spanish'], 17, 'Focused exclusively on motor vehicle and premises liability claims.', 'Consultations available within 3 business days', 8),
-  ('22222222-2222-2222-2222-222222222202', '11111111-1111-1111-1111-111111111102', 'Renata Silva', array['personal_injury'], 'California', array['English','Portuguese'], 11, 'Personal injury practice emphasizing thorough medical documentation review.', 'Consultations available this week', 6),
-  ('22222222-2222-2222-2222-222222222203', '11111111-1111-1111-1111-111111111103', 'Devon Whitmore', array['employment'], 'California', array['English'], 14, 'Represents employees in wrongful termination, discrimination, and retaliation matters.', 'Consultations available within 2 business days', 5),
-  ('22222222-2222-2222-2222-222222222204', '11111111-1111-1111-1111-111111111104', 'Grace Nguyen', array['employment'], 'California', array['English','Vietnamese'], 9, 'Employment law practice focused on PIP-related disputes and documentation review.', 'Consultations available this week', 7)
+  ('22222222-2222-2222-2222-222222222201', '11111111-1111-1111-1111-111111111101', 'Michael Alden', array['personal_injury'], 'New York', array['English','Spanish'], 17, 'Focused exclusively on motor vehicle and premises liability claims.', 'Consultations available within 3 business days', 8),
+  ('22222222-2222-2222-2222-222222222202', '11111111-1111-1111-1111-111111111102', 'Renata Silva', array['personal_injury'], 'New York', array['English','Portuguese'], 11, 'Personal injury practice emphasizing thorough medical documentation review.', 'Consultations available this week', 6),
+  ('22222222-2222-2222-2222-222222222203', '11111111-1111-1111-1111-111111111103', 'Devon Whitmore', array['employment'], 'New York', array['English'], 14, 'Represents employees in wrongful termination, discrimination, and retaliation matters.', 'Consultations available within 2 business days', 5),
+  ('22222222-2222-2222-2222-222222222204', '11111111-1111-1111-1111-111111111104', 'Grace Nguyen', array['employment'], 'New York', array['English','Vietnamese'], 9, 'Employment law practice focused on PIP-related disputes and documentation review.', 'Consultations available this week', 7)
 on conflict (id) do nothing;
 
 -- ---------------------------------------------------------------------
@@ -58,6 +58,6 @@ insert into public.faq_items (question, answer, category) values
 -- insert into public.claims (id, user_id, category, subtype, title, status, jurisdiction, incident_date, deadline_date, deadline_label, goals, current_step, total_steps)
 -- values (
 --   '33333333-3333-3333-3333-333333333301', :demo_user_id, 'personal_injury', 'Motor vehicle accident',
---   'Motor vehicle collision — 4th & Alameda', 'submitted', 'California', '2026-05-14', '2028-05-14',
---   'California personal injury statute of limitations (approx.)', 'Recover costs of medical treatment and lost wages.', 16, 16
+--   'Motor vehicle collision — 4th & Alameda', 'submitted', 'New York', '2026-05-14', '2028-05-14',
+--   'New York personal injury statute of limitations (approx.)', 'Recover costs of medical treatment and lost wages.', 16, 16
 -- );
