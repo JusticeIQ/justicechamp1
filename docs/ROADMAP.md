@@ -10,7 +10,7 @@
   storage-level RLS
 - Real PDF generation for claim summaries (e.g. via a serverless function using a headless
   renderer or PDF library)
-- Expand jurisdiction coverage beyond California, with jurisdiction-specific deadline data
+- Expand jurisdiction coverage beyond New York, with jurisdiction-specific deadline data
 
 ## Mid-term
 

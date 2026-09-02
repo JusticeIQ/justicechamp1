@@ -11,7 +11,7 @@ partners, and technical evaluators. It is **not** production-hardened. Known lim
   name and a randomized size label) rather than persisting bytes to Supabase Storage.
 - **No real authentication.** Login/signup accept any non-empty email/password and seed the same
   demo state; there is no password hashing, verification email, or session token in this MVP.
-- **Single jurisdiction example.** Demo content is California-specific; jurisdiction-aware
+- **Single jurisdiction example.** Demo content is New York-specific; jurisdiction-aware
   deadline logic is illustrative only, not legally verified.
 - **Lawyer matching is static sample data.** The four demo lawyer/firm profiles are fictional and
   matched via simple client-side filtering (practice area + jurisdiction), not a real matching
