@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useAppState } from "@/lib/store";
 import { Navbar } from "./Navbar";
 import { MobileNav } from "./MobileNav";
@@ -11,12 +11,17 @@ import { Spinner } from "./ui";
 export function AppShell({ children, requireAuth = true }: { children: React.ReactNode; requireAuth?: boolean }) {
   const { isAuthenticated, hydrated } = useAppState();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     if (hydrated && requireAuth && !isAuthenticated) {
-      router.replace("/login");
+      // Preserve where the person was (including any in-progress step,
+      // since a claim id in the URL path is kept) so a session expiry
+      // never silently drops them — after signing back in, they return here.
+      const target = typeof window !== "undefined" ? window.location.pathname + window.location.search : pathname;
+      router.replace(`/login?redirect=${encodeURIComponent(target || pathname)}`);
     }
-  }, [hydrated, requireAuth, isAuthenticated, router]);
+  }, [hydrated, requireAuth, isAuthenticated, router, pathname]);
 
   if (requireAuth && !hydrated) {
     return (

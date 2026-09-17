@@ -29,18 +29,24 @@ export default function LandingPage() {
               <div className="flex items-center gap-2 mb-5">
                 <Badge tone="teal">Powered by SolonIQ™</Badge>
               </div>
-          <h1 className="text-4xl md:text-5xl font-bold leading-tight">
-                      Life is unpredictable.<br />Being prepared doesn't have to be.
-          </h1>
-                      <p className="mt-4 text-lg text-white/80 max-w-lg">
-                                  A free, private place to get legal information, organize important records, and connect with the right legal
-                                  help when you need it — so you're never overwhelmed when legal issues arise.
-                      </p>
-                      <p className="mt-4 text-white/60 max-w-lg text-sm">
-                                  Know what to do before you need to know. JusticeChamp helps you organize evidence, see a transparent
-                                  claim-readiness score, and connect with vetted lawyers when you're ready.
-                      </p>
-              <div className="mt-8 flex flex-wrap gap-3">
+              <h1 className="text-4xl md:text-5xl font-bold leading-tight">
+                There&apos;s No Need to Fear.<br />JusticeChamp is here!
+              </h1>
+              <p className="mt-5 text-lg text-white/80 max-w-lg" style={{ maxWidth: "42ch" }}>
+                Life is unpredictable. Being prepared doesn&apos;t have to be.
+              </p>
+              <p className="mt-4 text-white/70 max-w-lg text-sm" style={{ maxWidth: "62ch" }}>
+                A free, private place to get legal information, organize important records, and connect with the right legal
+                help when you need it — so you&apos;re never overwhelmed when legal issues arise.
+              </p>
+              <p className="mt-4 text-white/70 max-w-lg text-sm" style={{ maxWidth: "62ch" }}>
+                Know what to do before you need to know. JusticeChamp helps you organize evidence, see a transparent
+                claim-readiness score, and connect with vetted lawyers when you&apos;re ready.
+              </p>
+              <p className="mt-6 text-white/90 max-w-lg text-sm" style={{ maxWidth: "62ch" }}>
+                What makes us different? <strong className="font-semibold text-white">We don&apos;t work for any law firm. We work for you!</strong>
+              </p>
+              <div className="mt-6 flex flex-wrap gap-3">
                 <Link href="/signup" className="inline-flex items-center justify-center rounded-lg font-medium px-6 py-3 bg-teal-500 hover:bg-teal-600 text-white shadow-md shadow-teal-500/30">
                   Create a free account
                 </Link>
@@ -50,12 +56,12 @@ export default function LandingPage() {
               </div>
               <p className="mt-4 text-xs text-white/40 max-w-md">
                 JusticeChamp is not a law firm and does not provide legal advice. It provides preliminary, informational
-                analysis to help you prepare — not a legal opinion or guaranteed outcome.
+                analysis to help you prepare — not a legal opinion, a guarantee of representation, or a guaranteed outcome.
               </p>
             </div>
             <div className="hidden md:block">
               <div className="bg-white rounded-xl2 shadow-2xl p-6 text-navy-900">
-                <p className="text-xs font-medium text-navy-700 mb-3">Rate My Claim — preview</p>
+                <p className="text-xs font-medium text-navy-700 mb-3">Review My Claim — preview</p>
                 <div className="flex items-center gap-4">
                   <div className="h-24 w-24 rounded-full border-8 border-teal-500 flex items-center justify-center text-2xl font-bold">78</div>
                   <div>
@@ -100,13 +106,13 @@ export default function LandingPage() {
             <div className="grid md:grid-cols-2 gap-6">
               <Card className="border-teal-200">
                 <Badge>Personal Injury</Badge>
-                <h3 className="mt-3 font-semibold text-lg text-navy-900">Motor vehicle, slip and fall, premises, medical, and product injury matters</h3>
-                <p className="mt-2 text-sm text-navy-700">Document injuries, medical treatment, insurance details, and evidence with a guided 16-step intake.</p>
+                <h3 className="mt-3 font-semibold text-lg text-navy-900">Motor vehicle, slip and fall, workplace, medical, and product injury matters</h3>
+                <p className="mt-2 text-sm text-navy-700">A short, plain-language guided intake covers injuries, treatment, evidence, and deadlines — one question at a time.</p>
               </Card>
               <Card className="border-teal-200">
                 <Badge>Employment Law</Badge>
-                <h3 className="mt-3 font-semibold text-lg text-navy-900">Termination, discrimination, harassment, retaliation, and wage disputes</h3>
-                <p className="mt-2 text-sm text-navy-700">Capture chronology, employer responses, and documentation with a guided 18-step intake.</p>
+                <h3 className="mt-3 font-semibold text-lg text-navy-900">Contract review, severance review, and other workplace concerns</h3>
+                <p className="mt-2 text-sm text-navy-700">Choose the tool that fits your situation and get a plain-language review, without a long questionnaire first.</p>
               </Card>
             </div>
           </div>

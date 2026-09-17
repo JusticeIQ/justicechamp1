@@ -13,7 +13,7 @@ export function Footer() {
           <p className="text-white/90 font-medium mb-2">Product</p>
           <ul className="space-y-1.5">
             <li><Link href="/report-incident" className="hover:text-white">Report an Incident</Link></li>
-            <li><Link href="/rate-my-claim" className="hover:text-white">Rate My Claim</Link></li>
+            <li><Link href="/rate-my-claim" className="hover:text-white">Review My Claim</Link></li>
             <li><Link href="/lawyer-matches" className="hover:text-white">Lawyer Matching</Link></li>
             <li><Link href="/demo" className="hover:text-white">Demo Tour</Link></li>
           </ul>

@@ -30,7 +30,13 @@ export default function ClaimDetailPage() {
   }
 
   const answeredEntries = Object.values(claim.answers).filter((a) => a.status === "answered" && a.value);
-  const resumeHref = `/report-incident/${claim.category === "personal_injury" ? "personal-injury" : "employment"}?claim=${claim.id}`;
+  const TOOL_ROUTE: Record<string, string> = {
+    personal_injury: "/report-incident/personal-injury",
+    employment_contract: "/employment/contract-review",
+    employment_severance: "/employment/severance-review",
+    employment_other: "/employment/workplace-issue",
+  };
+  const resumeHref = `${TOOL_ROUTE[claim.tool ?? (claim.category === "personal_injury" ? "personal_injury" : "employment_other")]}?claim=${claim.id}`;
   const unreadMessages = claim.lawyerMessages.filter((m) => !m.read).length;
 
   function handleOpenMessage(id: string) {
@@ -196,7 +202,7 @@ export default function ClaimDetailPage() {
               <Card>
                 <h2 className="font-semibold text-navy-900 text-sm">Claim-readiness score</h2>
                 <p className="text-sm text-navy-700 mt-2">Not yet generated.</p>
-                <Link href="/rate-my-claim" className="block mt-3"><Button size="sm" className="w-full">Rate My Claim</Button></Link>
+                <Link href="/rate-my-claim" className="block mt-3"><Button size="sm" className="w-full">Review My Claim</Button></Link>
               </Card>
             )}
 

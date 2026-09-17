@@ -126,11 +126,23 @@ export interface LawyerMessage {
     relatedUpdate?: boolean;
 }
 
+export type IntakeTool = "personal_injury" | "employment_contract" | "employment_severance" | "employment_other";
+
+export interface SharedRecord {
+    id: string;
+    lawyerId: string;
+    lawyerName: string;
+    firmName: string;
+    sharedAt: string;
+    fields: string[]; // plain-language list of exactly what was shared, e.g. "Contact details", "Assessment summary", "front_damage_photo.jpg"
+}
+
 export interface Claim {
     id: string;
     userId: string;
     category: ClaimCategory;
     subtype: string;
+    tool?: IntakeTool;
     title: string;
     status: ClaimStatus;
     createdAt: string;
@@ -147,6 +159,27 @@ export interface Claim {
     deadlineDate?: string;
     deadlineLabel?: string;
     lawyerMessages: LawyerMessage[];
+    lawyerRecommendationChoice?: "yes" | "not_now";
+    sharedWithLawyers?: SharedRecord[];
+}
+
+export interface AvailabilityRequest {
+    id: string;
+    name: string;
+    email: string;
+    legalIssue: "Personal injury" | "Employment";
+    jurisdiction?: string;
+    submittedAt: string;
+}
+
+export interface OtherLegalMatterRequest {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    issueCategory: string;
+    specify?: string;
+    submittedAt: string;
 }
 
 export interface Resource {

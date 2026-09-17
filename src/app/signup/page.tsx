@@ -30,7 +30,7 @@ export default function SignupPage() {
       setError(result.error ?? "Unable to create account.");
       return;
     }
-    router.push("/dashboard");
+    router.push("/get-started");
   }
 
   return (
@@ -79,7 +79,7 @@ export default function SignupPage() {
               <span className="text-xs text-navy-700">or</span>
               <div className="h-px bg-navy-900/10 flex-1" />
             </div>
-            <Button variant="outline" className="w-full" type="button" onClick={() => { loginDemo(); router.push("/dashboard"); }}>
+            <Button variant="outline" className="w-full" type="button" onClick={() => { loginDemo(); router.push("/get-started"); }}>
               Continue with demo account
             </Button>
 

@@ -33,12 +33,21 @@ export default function DashboardPage() {
             <p className="text-navy-700 text-sm mt-1">Here's where things stand across your claims.</p>
           </div>
           <div className="flex gap-3">
-            <Link href="/report-incident"><Button variant="outline">Report an Incident</Button></Link>
-            <Link href="/rate-my-claim"><Button variant="cta">Rate My Claim</Button></Link>
+            <Link href="/get-started"><Button variant="outline">What can I help you with?</Button></Link>
+            <Link href="/rate-my-claim"><Button variant="cta">Review My Claim</Button></Link>
           </div>
         </div>
 
         <DisclaimerBanner />
+
+        {claims.some((c) => c.lawyerRecommendationChoice === "not_now") && (
+          <Card className="bg-teal-50 border-teal-200">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="text-sm text-teal-900">You chose not to see lawyer recommendations earlier. You can request them any time.</p>
+              <Link href="/lawyer-matches"><Button size="sm">Request lawyer recommendations</Button></Link>
+            </div>
+          </Card>
+        )}
 
         <div className="grid sm:grid-cols-2 gap-4">
           <Card>
@@ -161,7 +170,7 @@ export default function DashboardPage() {
 
                     <div className="flex flex-wrap gap-2 mt-4">
                       <Link href={`/claims/${claim.id}`}><Button size="sm" variant="outline">View claim</Button></Link>
-                      <Link href="/rate-my-claim"><Button size="sm" variant="ghost">Rate My Claim</Button></Link>
+                      <Link href="/rate-my-claim"><Button size="sm" variant="ghost">Review My Claim</Button></Link>
                       <Link href="/lawyer-matches"><Button size="sm" variant="ghost">Lawyer matches</Button></Link>
                     </div>
                   </Card>

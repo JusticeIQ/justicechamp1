@@ -17,7 +17,7 @@ const JOURNEY = [
   { step: 8, title: "Build a timeline", detail: "Add chronological events and attach evidence.", href: "/timeline" },
   { step: 9, title: "Submit the incident report", detail: "Review responses before submitting for assessment.", href: "/claims" },
   { step: 10, title: "Generate a claim-readiness score", detail: "See a transparent, factor-based preliminary score.", href: "/rate-my-claim" },
-  { step: 11, title: "Review missing information", detail: "Rate My Claim highlights specific gaps to close.", href: "/rate-my-claim" },
+  { step: 11, title: "Review missing information", detail: "Review My Claim highlights specific gaps to close.", href: "/rate-my-claim" },
   { step: 12, title: "Improve the claim profile", detail: "Use “Improve My Score” to jump back into weak areas.", href: "/rate-my-claim" },
   { step: 13, title: "View lawyer matches", detail: "See sample partner lawyers matched to the claim.", href: "/lawyer-matches" },
   { step: 14, title: "Request a consultation", detail: "Consent-based sharing of the claim summary.", href: "/lawyer-matches" },

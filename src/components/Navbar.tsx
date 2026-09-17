@@ -63,7 +63,7 @@ export function Navbar() {
             <>
               <Link href="/rate-my-claim" className="hidden md:inline-flex">
                 <Button variant="cta" size="sm">
-                  Rate My Claim
+                  Review My Claim
                 </Button>
               </Link>
               <Link href="/profile" className="hidden sm:inline-flex h-9 w-9 rounded-full bg-white/10 text-white items-center justify-center text-xs font-semibold focus-ring">

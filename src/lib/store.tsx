@@ -3,19 +3,30 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import {
   ActivityLogItem,
+  AvailabilityRequest,
   Claim,
   ClaimCategory,
   ClaimDocument,
   DemoUser,
   ImportantDate,
   IntakeAnswer,
+  IntakeTool,
   Notice,
   NotificationItem,
+  OtherLegalMatterRequest,
+  SharedRecord,
   TimelineEvent,
 } from "./types";
 import { buildDemoClaim1, buildDemoClaim2, DEMO_USER } from "./demo-data";
 import { computeClaimScore } from "./scoring";
-import { stepsForCategory } from "./intake-config";
+import { stepsForTool } from "./intake-config";
+
+const TOOL_CATEGORY: Record<IntakeTool, ClaimCategory> = {
+  personal_injury: "personal_injury",
+  employment_contract: "employment",
+  employment_severance: "employment",
+  employment_other: "employment",
+};
 
 const STORAGE_KEY = "justicechamp-demo-state-v1";
 
@@ -26,10 +37,21 @@ interface AppState {
   notifications: NotificationItem[];
   activityLog: ActivityLogItem[];
   readNoticeIds: string[];
+  availabilityRequests: AvailabilityRequest[];
+  otherLegalMatterRequests: OtherLegalMatterRequest[];
 }
 
 function emptyState(): AppState {
-  return { isAuthenticated: false, user: null, claims: [], notifications: [], activityLog: [], readNoticeIds: [] };
+  return {
+    isAuthenticated: false,
+    user: null,
+    claims: [],
+    notifications: [],
+    activityLog: [],
+    readNoticeIds: [],
+    availabilityRequests: [],
+    otherLegalMatterRequests: [],
+  };
 }
 
 function seededState(): AppState {
@@ -52,16 +74,21 @@ function seededState(): AppState {
       { id: "a4", message: "Generated claim-readiness score for both claims", timestamp: "2026-06-10T15:30:00Z" },
     ],
     readNoticeIds: [],
+    availabilityRequests: [],
+    otherLegalMatterRequests: [],
   };
 }
 
 interface AppContextValue extends AppState {
   hydrated: boolean;
+  saveError: boolean;
+  retrySave: () => void;
   loginDemo: () => void;
   login: (email: string, password: string) => { ok: boolean; error?: string };
   signup: (fullName: string, email: string, password: string, confirmPassword: string) => { ok: boolean; error?: string };
   logout: () => void;
-  createClaim: (category: ClaimCategory, subtype: string) => string;
+  createClaim: (category: ClaimCategory, subtype: string, tool?: IntakeTool) => string;
+  createOrResumeToolClaim: (tool: IntakeTool, subtype: string) => string;
   getClaim: (claimId: string) => Claim | undefined;
   updateAnswer: (claimId: string, stepId: string, fieldId: string, value: IntakeAnswer["value"], status: IntakeAnswer["status"]) => void;
   setClaimStep: (claimId: string, step: number) => void;
@@ -75,6 +102,10 @@ interface AppContextValue extends AppState {
   sendDocumentToLawyer: (claimId: string, docId: string) => void;
   recomputeScore: (claimId: string) => void;
   requestConsultation: (claimId: string, lawyerId: string, lawyerName: string) => void;
+  recordShare: (claimId: string, record: Omit<SharedRecord, "id" | "sharedAt">) => void;
+  setLawyerRecommendationChoice: (claimId: string, choice: "yes" | "not_now") => void;
+  submitAvailabilityRequest: (req: Omit<AvailabilityRequest, "id" | "submittedAt">) => void;
+  submitOtherLegalMatterRequest: (req: Omit<OtherLegalMatterRequest, "id" | "submittedAt">) => void;
   logActivity: (message: string) => void;
   markNotificationRead: (id: string) => void;
   markLawyerMessageRead: (claimId: string, messageId: string) => void;
@@ -92,6 +123,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [hydrated, setHydrated] = useState(false);
   const [notices, setNotices] = useState<Notice[]>([]);
   const [importantDates, setImportantDates] = useState<ImportantDate[]>([]);
+  const [saveError, setSaveError] = useState(false);
 
   useEffect(() => {
     try {
@@ -111,10 +143,14 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     if (!hydrated) return;
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      if (saveError) setSaveError(false);
     } catch {
-      // storage may be unavailable (e.g. private browsing quota) — fail silently
+      // storage may be unavailable (e.g. private browsing quota, or full).
+      // Answers already live in component state / this render, so nothing
+      // is lost — we just can't persist across a reload yet.
+      setSaveError(true);
     }
-  }, [state, hydrated]);
+  }, [state, hydrated, saveError]);
 
   const refreshBridgeData = useCallback(async () => {
     try {
@@ -175,7 +211,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       consentClaimComms: true,
       accountType: "consumer",
     };
-    setState({ isAuthenticated: true, user: newUser, claims: [], notifications: [], activityLog: [{ id: "a1", message: "Account created", timestamp: new Date().toISOString() }], readNoticeIds: [] });
+    setState({ ...emptyState(), isAuthenticated: true, user: newUser, activityLog: [{ id: "a1", message: "Account created", timestamp: new Date().toISOString() }] });
     return { ok: true };
   }, []);
 
@@ -191,14 +227,16 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const getClaim = useCallback((claimId: string) => state.claims.find((c) => c.id === claimId), [state.claims]);
 
   const createClaim = useCallback(
-    (category: ClaimCategory, subtype: string) => {
+    (category: ClaimCategory, subtype: string, tool?: IntakeTool) => {
       const id = `claim-${Date.now()}`;
-      const steps = stepsForCategory(category);
+      const resolvedTool: IntakeTool = tool ?? (category === "personal_injury" ? "personal_injury" : "employment_other");
+      const steps = stepsForTool(resolvedTool);
       const newClaim: Claim = {
         id,
         userId: state.user?.id ?? "guest",
         category,
         subtype,
+        tool: resolvedTool,
         title: subtype || (category === "personal_injury" ? "New personal injury report" : "New employment report"),
         status: "draft",
         createdAt: new Date().toISOString(),
@@ -213,12 +251,22 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         jurisdiction: "",
         incidentDate: "",
         lawyerMessages: [],
+        sharedWithLawyers: [],
       };
       setState((prev) => ({ ...prev, claims: [newClaim, ...prev.claims] }));
-      logActivity(`Started a new ${category === "personal_injury" ? "personal injury" : "employment"} incident report`);
+      logActivity(`Started a new ${category === "personal_injury" ? "personal injury" : "employment"} report`);
       return id;
     },
     [state.user, logActivity]
+  );
+
+  const createOrResumeToolClaim = useCallback(
+    (tool: IntakeTool, subtype: string) => {
+      const existingDraft = state.claims.find((c) => c.tool === tool && c.status === "draft");
+      if (existingDraft) return existingDraft.id;
+      return createClaim(TOOL_CATEGORY[tool], subtype, tool);
+    },
+    [state.claims, createClaim]
   );
 
   const updateAnswer = useCallback(
@@ -368,6 +416,49 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     [logActivity]
   );
 
+  const retrySave = useCallback(() => {
+    // Nudging state with a shallow copy forces the persistence effect to
+    // run again and attempt localStorage.setItem once more.
+    setState((prev) => ({ ...prev }));
+  }, []);
+
+  const recordShare = useCallback(
+    (claimId: string, record: Omit<SharedRecord, "id" | "sharedAt">) => {
+      const full: SharedRecord = { ...record, id: `share-${Date.now()}`, sharedAt: new Date().toISOString() };
+      setState((prev) => ({
+        ...prev,
+        claims: prev.claims.map((c) => (c.id === claimId ? { ...c, sharedWithLawyers: [full, ...(c.sharedWithLawyers ?? [])] } : c)),
+      }));
+      logActivity(`Shared ${record.fields.length} item(s) with ${record.firmName}, with your consent`);
+    },
+    [logActivity]
+  );
+
+  const setLawyerRecommendationChoice = useCallback((claimId: string, choice: "yes" | "not_now") => {
+    setState((prev) => ({
+      ...prev,
+      claims: prev.claims.map((c) => (c.id === claimId ? { ...c, lawyerRecommendationChoice: choice } : c)),
+    }));
+  }, []);
+
+  const submitAvailabilityRequest = useCallback(
+    (req: Omit<AvailabilityRequest, "id" | "submittedAt">) => {
+      const full: AvailabilityRequest = { ...req, id: `avail-${Date.now()}`, submittedAt: new Date().toISOString() };
+      setState((prev) => ({ ...prev, availabilityRequests: [full, ...prev.availabilityRequests] }));
+      logActivity(`Requested to be notified when a lawyer is available for ${req.legalIssue.toLowerCase()} matters`);
+    },
+    [logActivity]
+  );
+
+  const submitOtherLegalMatterRequest = useCallback(
+    (req: Omit<OtherLegalMatterRequest, "id" | "submittedAt">) => {
+      const full: OtherLegalMatterRequest = { ...req, id: `otherlegal-${Date.now()}`, submittedAt: new Date().toISOString() };
+      setState((prev) => ({ ...prev, otherLegalMatterRequests: [full, ...prev.otherLegalMatterRequests] }));
+      logActivity(`Requested a future update about a ${req.issueCategory.toLowerCase()} matter`);
+    },
+    [logActivity]
+  );
+
   const markNotificationRead = useCallback((id: string) => {
     setState((prev) => ({ ...prev, notifications: prev.notifications.map((n) => (n.id === id ? { ...n, read: true } : n)) }));
   }, []);
@@ -391,11 +482,14 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     () => ({
       ...state,
       hydrated,
+      saveError,
+      retrySave,
       loginDemo,
       login,
       signup,
       logout,
       createClaim,
+      createOrResumeToolClaim,
       getClaim,
       updateAnswer,
       setClaimStep,
@@ -409,6 +503,10 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       sendDocumentToLawyer,
       recomputeScore,
       requestConsultation,
+      recordShare,
+      setLawyerRecommendationChoice,
+      submitAvailabilityRequest,
+      submitOtherLegalMatterRequest,
       logActivity,
       markNotificationRead,
       markLawyerMessageRead,
@@ -421,11 +519,14 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     [
       state,
       hydrated,
+      saveError,
+      retrySave,
       loginDemo,
       login,
       signup,
       logout,
       createClaim,
+      createOrResumeToolClaim,
       getClaim,
       updateAnswer,
       setClaimStep,
@@ -439,6 +540,10 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       sendDocumentToLawyer,
       recomputeScore,
       requestConsultation,
+      recordShare,
+      setLawyerRecommendationChoice,
+      submitAvailabilityRequest,
+      submitOtherLegalMatterRequest,
       logActivity,
       markNotificationRead,
       markLawyerMessageRead,

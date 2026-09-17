@@ -1,6 +1,6 @@
 import { Claim, ClaimScore, ScoreFactor } from "./types";
 
-// Transparent, deterministic "Rate My Claim" scoring engine.
+// Transparent, deterministic "Review My Claim" scoring engine.
 // This produces a preliminary INFORMATIONAL readiness score only.
 // It does not estimate likelihood of success or settlement value.
 

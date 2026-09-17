@@ -115,6 +115,33 @@ function analyzeDismissalReasons(text: string): ContractFlag {
   };
 }
 
+export interface DocumentOverview {
+  employerName?: string;
+  role?: string;
+  compensationSummary?: string;
+  effectiveDate?: string;
+}
+
+// A light, best-effort scan for a handful of document-overview facts. Only
+// returns what it can actually find in the text — never invents a value.
+export function extractDocumentOverview(text: string): DocumentOverview {
+  const overview: DocumentOverview = {};
+
+  const employerMatch = text.match(/between\s+([A-Z][^,(\n]{2,80}?)\s*\(?["“]?\s*(Employer|Company)/i);
+  if (employerMatch) overview.employerName = employerMatch[1].trim();
+
+  const roleMatch = text.match(/(?:position|title|role)\s+of\s+([A-Z][^.,\n]{2,60})/i) ?? text.match(/as\s+(?:its|a|an)\s+([A-Z][^.,\n]{2,60})/i);
+  if (roleMatch) overview.role = roleMatch[1].trim();
+
+  const compSentence = findSentence(text, /(salary|compensation|wage|hourly rate)/i);
+  if (compSentence) overview.compensationSummary = compSentence;
+
+  const dateMatch = text.match(/effective\s+(?:as of\s+)?([A-Za-z]+\s+\d{1,2},?\s+\d{4}|\d{1,2}\/\d{1,2}\/\d{2,4})/i);
+  if (dateMatch) overview.effectiveDate = dateMatch[1];
+
+  return overview;
+}
+
 export function analyzeContractText(text: string): ContractAnalysis {
   const trimmed = text.trim();
   const wordCount = trimmed ? trimmed.split(/\s+/).length : 0;
