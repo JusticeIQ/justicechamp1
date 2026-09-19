@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { AppShell } from "@/components/AppShell";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
@@ -16,10 +16,18 @@ function str(v: unknown): string {
 }
 
 function SeveranceResultsInner() {
+  const router = useRouter();
   const searchParams = useSearchParams();
-  const { getClaim } = useAppState();
+  const { getClaim, setLawyerRecommendationChoice } = useAppState();
   const claim = getClaim(searchParams.get("claim") ?? "");
-
+  
+  function connectToLawyerNow() {
+    if (!claim) return;
+    setLawyerRecommendationChoice(claim.id, "yes");    
+    track({ name: "lawyer_recommendation_selected", props: { choice: "yes", tool: "severance", jurisdiction: claim.jurisdiction } });
+    router.push(`/lawyer-matches?claim=${claim.id}`);
+  }
+  
   useEffect(() => {
     if (claim) track({ name: "results_viewed", props: { tool: "severance" } });
   }, [claim]);
@@ -65,7 +73,7 @@ function SeveranceResultsInner() {
       </Card>
 
       <Card>
-        <h2 className="font-semibold text-navy-900 text-sm mb-2">Plain-English summary of the offer</h2>
+        <h2 className="font-semibold text-navy-900 text-sm mb-2">Summary of the offer</h2>
         <ul className="text-sm text-navy-700 space-y-1.5 list-disc list-inside">
           {analysis.offerSummary.map((s) => <li key={s}>{s}</li>)}
         </ul>
@@ -82,21 +90,16 @@ function SeveranceResultsInner() {
                   <Badge tone={f.severity === "review" ? "amber" : "gray"}>{f.severity === "review" ? "worth reviewing" : "for context"}</Badge>
                 </div>
                 <p className="text-sm text-navy-700 mt-1">{f.summary}</p>
+                {f.promptLawyer && (
+                <Button variant="cta" size="sm" className="mt-2" onClick={connectToLawyerNow}>
+                  Connect with a JusticeChamp lawyer now
+                </Button>
+                )}
               </li>
             ))}
           </ul>
         </Card>
       )}
-
-      <Card className="bg-amber-50 border-amber-200">
-        <h2 className="font-semibold text-amber-900 text-sm">Missing information and AI confidence</h2>
-        {analysis.missingInformation.length > 0 && (
-          <ul className="text-sm text-amber-900 mt-2 space-y-1 list-disc list-inside">
-            {analysis.missingInformation.map((s) => <li key={s}>{s}</li>)}
-          </ul>
-        )}
-        <p className="text-sm text-amber-900 mt-2">AI confidence in this preview: {analysis.confidence}%, based on how complete your answers and uploaded documents are.</p>
-      </Card>
 
       <Card>
         <h2 className="font-semibold text-navy-900 text-sm mb-2">Suggested next steps</h2>
@@ -111,7 +114,7 @@ function SeveranceResultsInner() {
       <Card className="bg-amber-50 border-amber-200">
         <p className="text-sm text-amber-900">
           This is automated legal information generated from what you entered, not legal advice, and JusticeChamp is not calculating a legal
-          limitation period. Only a licensed lawyer can evaluate your specific offer and jurisdiction.
+          limitation period. Only a JusticeChamp lawyer can evaluate your specific offer and jurisdiction.
         </p>
       </Card>
 
