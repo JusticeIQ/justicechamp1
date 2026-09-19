@@ -8,6 +8,10 @@ export interface SeveranceFlag {
   topic: string;
   summary: string;
   severity: "info" | "review";
+  // When true, the results page shows a button next to this flag that takes
+  // the person straight into the lawyer-recommendation flow, for flags
+  // urgent enough that "read more below" isn't the right call to action.
+  promptLawyer?: boolean;
 }
 
 export interface SeveranceAnalysis {
@@ -61,7 +65,12 @@ export function analyzeSeverance(claim: Claim): SeveranceAnalysis {
 
   const flags: SeveranceFlag[] = [];
   if (terminationReason === "With cause") {
-    flags.push({ topic: "Reason for termination", summary: "You indicated this was a termination \"with cause.\" Cause terminations can significantly limit severance eligibility — worth confirming what your employer is relying on.", severity: "review" });
+    flags.push({
+      topic: "Reason for termination",
+      summary: "Since you have indicated that you were let go with cause, it is recommended that you contact a JusticeChamp lawyer to discuss your termination.",
+      severity: "review",
+      promptLawyer: true,
+    });
   }
   if (terminationReason === "No reason given") {
     flags.push({ topic: "Reason for termination", summary: "No reason was given for your termination. In many jurisdictions, an employer isn't required to state a reason, but this can still be worth raising with a lawyer.", severity: "info" });
