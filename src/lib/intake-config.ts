@@ -344,7 +344,7 @@ export const EMPLOYMENT_SEVERANCE_STEPS: IntakeStep[] = [
   {
     id: "sv-signed-agreement",
     section: "Agreement",
-    title: "Have you signed a termination or severance agreement?",
+    title: "Have you signed the termination or severance package?",
     helper: "",
     fields: [{ id: "signedAgreement", label: "Agreement signed", type: "radio", options: ["Yes", "No", "Not sure"] }],
   },
